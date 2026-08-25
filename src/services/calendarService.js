@@ -12,14 +12,30 @@ class CalendarService {
     }
 
     initPaths() {
+        const appData = process.env.APPDATA;
+        const cacheCandidates = [];
+        const selectedCandidates = [];
+
         try {
             const userData = app.getPath('userData');
-            this.cachePath = path.join(userData, 'calendar_cache.json');
-            this.selectedCalendarsPath = path.join(userData, 'selected_calendars.json');
-        } catch {
-            this.cachePath = path.join(process.cwd(), 'calendar_cache.json');
-            this.selectedCalendarsPath = path.join(process.cwd(), 'selected_calendars.json');
+            if (userData) {
+                cacheCandidates.push(path.join(userData, 'calendar_cache.json'));
+                selectedCandidates.push(path.join(userData, 'selected_calendars.json'));
+            }
+        } catch {}
+
+        if (appData) {
+            cacheCandidates.push(path.join(appData, 'google-calender-widget', 'calendar_cache.json'));
+            cacheCandidates.push(path.join(appData, 'p32929.google-calender-widget', 'calendar_cache.json'));
+            selectedCandidates.push(path.join(appData, 'google-calender-widget', 'selected_calendars.json'));
+            selectedCandidates.push(path.join(appData, 'p32929.google-calender-widget', 'selected_calendars.json'));
         }
+
+        cacheCandidates.push(path.join(process.cwd(), 'calendar_cache.json'));
+        selectedCandidates.push(path.join(process.cwd(), 'selected_calendars.json'));
+
+        this.cachePath = cacheCandidates.find(p => existsSync(p)) || cacheCandidates[0];
+        this.selectedCalendarsPath = selectedCandidates.find(p => existsSync(p)) || selectedCandidates[0];
     }
 
     getSelectedCalendarIds() {

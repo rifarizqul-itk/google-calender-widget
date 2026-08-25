@@ -20,11 +20,17 @@ class AuthService {
     }
 
     initPaths() {
+        const appData = process.env.APPDATA;
+        const localAppData = process.env.LOCALAPPDATA;
+
         // Candidate directories to look for client_secret*.json
         const candidateDirs = [
             path.resolve(__dirname, '..', '..'),
             process.resourcesPath,
-            process.cwd()
+            process.cwd(),
+            localAppData ? path.join(localAppData, 'Programs', 'google-calender-widget', 'resources') : null,
+            localAppData ? path.join(localAppData, 'Programs', 'google-calender-widget') : null,
+            appData ? path.join(appData, 'google-calender-widget') : null
         ].filter(Boolean);
 
         for (const dir of candidateDirs) {
@@ -40,12 +46,22 @@ class AuthService {
             } catch {}
         }
 
+        // Candidate paths for google_tokens.json (including installed widget AppData)
+        const tokenCandidates = [];
         try {
             const userData = app.getPath('userData');
-            this.tokenPath = path.join(userData, 'google_tokens.json');
-        } catch {
-            this.tokenPath = path.join(process.cwd(), 'google_tokens.json');
+            if (userData) tokenCandidates.push(path.join(userData, 'google_tokens.json'));
+        } catch {}
+
+        if (appData) {
+            tokenCandidates.push(path.join(appData, 'google-calender-widget', 'google_tokens.json'));
+            tokenCandidates.push(path.join(appData, 'p32929.google-calender-widget', 'google_tokens.json'));
         }
+        tokenCandidates.push(path.join(process.cwd(), 'google_tokens.json'));
+
+        // Pick existing token file or default to first candidate
+        const existingToken = tokenCandidates.find(p => existsSync(p));
+        this.tokenPath = existingToken || tokenCandidates[0] || path.join(process.cwd(), 'google_tokens.json');
     }
 
     loadCredentials() {
