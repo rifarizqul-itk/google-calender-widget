@@ -170,7 +170,7 @@
             lblEnd: 'Selesai',
             lblLocation: 'Lokasi (Opsional)',
             phLocation: 'Contoh: Gedung Lab B-204 / Google Meet',
-            lblDesc: 'Deskripsi / Catatan (Opsional)',
+            lblDesc: 'Deskripsi (Opsional)',
             phDesc: 'Catatan agenda atau tugas...',
             btnCancel: 'Batal',
             btnSubmitEvent: 'Simpan ke Google',
@@ -181,7 +181,7 @@
             
             detailLocation: 'Lokasi',
             detailReminders: 'Pengingat',
-            detailDesc: 'Deskripsi / Catatan',
+            detailDesc: 'Deskripsi',
             detailCreator: 'Pembuat Acara',
             detailOrganizer: 'Penyelenggara',
             detailAttendees: (n) => `Peserta (${n}):`,
