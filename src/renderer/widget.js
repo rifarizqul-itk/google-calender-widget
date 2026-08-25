@@ -910,7 +910,10 @@
     if (btnOpenByokGuide) {
         btnOpenByokGuide.addEventListener('click', () => {
             if (window.calendarWidgetAPI) {
-                window.calendarWidgetAPI.system.openExternal('https://github.com/rifarizqul-itk/google-calender-widget#panduan-setup-google-cloud-console-byok-mode');
+                const targetUrl = currentLang === 'id'
+                    ? 'https://github.com/rifarizqul-itk/google-calender-widget/blob/master/README.id-ID.md#panduan-setup-google-cloud-console-byok-mode'
+                    : 'https://github.com/rifarizqul-itk/google-calender-widget#google-cloud-console-setup-guide-byok-mode';
+                window.calendarWidgetAPI.system.openExternal(targetUrl);
             }
         });
     }

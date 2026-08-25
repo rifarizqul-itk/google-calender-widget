@@ -1,3 +1,6 @@
+**Read this in other languages:**
+[English](README.md) | [Indonesian](README.id-ID.md) |
+
 # Google Calendar Desktop Widget
 
 An ambient desktop calendar widget for Windows, macOS, and Linux built on Electron. It connects directly to the Google Calendar API v3 to display your daily schedule with real-time countdowns, dual views, offline caching, and desktop integration.
@@ -51,48 +54,48 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 ---
 
-## Panduan Setup Google Cloud Console (BYOK Mode)
+## Google Cloud Console Setup Guide (BYOK Mode)
 
-Widget ini menggunakan arsitektur **Bring Your Own Key (BYOK)** demi privasi dan keamanan maksimal. Anda memiliki kendali penuh atas kredensial Google API Anda sendiri tanpa perantara server pihak ketiga.
+This widget uses a **Bring Your Own Key (BYOK)** architecture for maximum privacy and security. You maintain full ownership and control of your Google API credentials without third-party intermediate servers.
 
-Ikuti langkah-langkah berikut untuk membuat `client_secret.json` secara gratis di Google Cloud Console:
+Follow these steps to generate your free `client_secret.json` in the Google Cloud Console:
 
-### 1. Buat Project Baru
-1. Buka [Google Cloud Console](https://console.cloud.google.com/).
-2. Pada header atas, klik dropdown project dan pilih **New Project**.
-3. Beri nama project (misal: `My Calendar Widget`), lalu klik **Create**.
+### 1. Create a New Project
+1. Open the [Google Cloud Console](https://console.cloud.google.com/).
+2. In the top navigation bar, click the project dropdown and select **New Project**.
+3. Name your project (e.g., `My Calendar Widget`), then click **Create**.
 
-### 2. Aktifkan Google Calendar API
-1. Buka menu navigasi kiri: **APIs & Services > Library**.
-2. Ketik `Google Calendar API` di kolom pencarian.
-3. Klik **Google Calendar API** lalu klik tombol **Enable**.
+### 2. Enable the Google Calendar API
+1. Open the left sidebar menu: **APIs & Services > Library**.
+2. Type `Google Calendar API` in the search bar.
+3. Select **Google Calendar API** and click the blue **Enable** button.
 
-### 3. Konfigurasi OAuth Consent Screen
-1. Buka menu **APIs & Services > OAuth consent screen**.
-2. Pilih User Type: **External**, lalu klik **Create**.
-3. Isi informasi aplikasi:
+### 3. Configure the OAuth Consent Screen
+1. Open the menu: **APIs & Services > OAuth consent screen**.
+2. Select User Type: **External**, then click **Create**.
+3. Fill in the required fields:
    - **App name**: `Google Calendar Desktop Widget`
-   - **User support email**: Pilih email Google Anda.
-   - **Developer contact information**: Masukkan email Anda.
-4. Klik **Save and Continue** pada halaman Scopes.
-5. Pada halaman **Test Users**, klik **+ ADD USERS**, lalu masukkan alamat email Google yang akan Anda gunakan untuk login di widget.
-6. Klik **Save and Continue** hingga selesai (*Back to Dashboard*).
+   - **User support email**: Select your Google email.
+   - **Developer contact information**: Enter your email address.
+4. Click **Save and Continue** past the Scopes page.
+5. On the **Test Users** page, click **+ ADD USERS**, and add the Google email address you will use to log into the widget.
+6. Click **Save and Continue** until complete (*Back to Dashboard*).
 
-### 4. Buat OAuth Client ID (Desktop App)
-1. Buka menu **APIs & Services > Credentials**.
-2. Klik tombol **+ CREATE CREDENTIALS** di bagian atas, pilih **OAuth client ID**.
-3. Pada dropdown **Application type**, pilih **Desktop app**.
-4. Beri nama (misal: `Calendar Desktop Client`), lalu klik **Create**.
-5. Jendela konfirmasi akan muncul. Klik **DOWNLOAD JSON** untuk mengunduh file kredensial.
+### 4. Create OAuth 2.0 Client ID (Desktop App)
+1. Open the menu: **APIs & Services > Credentials**.
+2. Click **+ CREATE CREDENTIALS** at the top, and choose **OAuth client ID**.
+3. In the **Application type** dropdown, select **Desktop app**.
+4. Give it a name (e.g., `Calendar Desktop Client`), then click **Create**.
+5. A confirmation dialog will appear. Click **DOWNLOAD JSON** to download your credentials file.
 
-### 5. Pasang `client_secret.json` ke Widget
-1. Ubah nama file JSON yang baru Anda unduh menjadi **`client_secret.json`**.
-2. Pindahkan file tersebut ke lokasi berikut:
-   - **Pengguna Installer Windows**: Tekan `Win + R`, ketik `%APPDATA%\google-calender-widget`, lalu paste file `client_secret.json` di folder tersebut (atau klik tombol **Buka Folder Kredensial** di layar widget).
-   - **Pengembang / Git Clone**: Letakkan file `client_secret.json` langsung di root folder project `google-calender-widget/`.
+### 5. Place `client_secret.json` in the Widget
+1. Rename the downloaded JSON file to **`client_secret.json`**.
+2. Place the file in one of the following locations:
+   - **Windows Installer Users**: Press `Win + R`, type `%APPDATA%\google-calender-widget`, and paste `client_secret.json` into this folder (or click the **Credentials Folder** button in the widget).
+   - **Developers / Git Clone**: Place `client_secret.json` directly in the project root directory `google-calender-widget/`.
 
-### 6. Masuk & Hubungkan Kalender
-Buka aplikasi widget, klik **Masuk dengan Google**, dan berikan izin di browser Anda. Agenda Anda akan langsung tersinkronisasi di desktop!
+### 6. Sign In & Sync
+Launch the widget, click **Sign in with Google**, and grant authorization in your browser. Your daily agenda will immediately sync to your desktop!
 
 ---
 
@@ -113,9 +116,9 @@ npm install
 
 ### 3. Place Credentials
 
-Pastikan file `client_secret.json` hasil langkah setup di atas telah diletakkan di root folder project.
+Ensure your `client_secret.json` file from the setup steps above is placed in the project root folder.
 
-> File `.gitignore` sudah otomatis mengecualikan `client_secret*.json` dan `google_tokens.json` agar kredensial Anda tidak akan pernah ter-commit ke git.
+> The `.gitignore` file automatically excludes `client_secret*.json` and `google_tokens.json` to prevent accidental credential commits.
 
 ### 4. Run the Widget
 
@@ -220,8 +223,8 @@ npm test
 
 The test suite covers:
 - Calendar view constants and URL detection
-- All-day and timed event formatting
-- Relative day calculation (today, tomorrow, past, future)
+- All-day and timed event formatting (EN & ID)
+- Relative day calculation (today, tomorrow, yesterday)
 - Event countdowns and active ongoing states
 - Debounce timers and cancellation
 - Window bounds persistence and screen boundary clamping
@@ -245,17 +248,17 @@ Build outputs are saved to the `dist/` directory:
 
 ## Troubleshooting
 
-### "File client_secret.json tidak ditemukan"
-Ensure your OAuth credentials file from Google Cloud Console is placed in the project root directory and named `client_secret.json`.
+### "File client_secret.json tidak ditemukan / not found"
+Ensure your OAuth credentials file from Google Cloud Console is placed in `%APPDATA%\google-calender-widget\` or the project root directory, and named `client_secret.json`.
 
 ### Window position appears off-screen after display changes
-Right-click the system tray icon and select **Reset Ukuran Standar (360x580)** to reset the window bounds to the center of the active monitor.
+Right-click the system tray icon and select **Reset Window Size (360x580)** to restore the widget to the center of your active screen.
 
 ### "Error: Waktu otorisasi Google login habis"
-The OAuth login server includes a 5-minute timeout for security. If the login process in your browser takes longer than 5 minutes, click **Masuk dengan Google** again in the widget.
+The OAuth login server includes a 5-minute timeout for security. If the login process in your browser takes longer than 5 minutes, click **Sign in with Google** again in the widget.
 
 ### Viewing Application Logs
-Click the settings icon in the widget header, then select **Buka Folder Log** to open the logs directory in Windows Explorer.
+Click the settings icon in the widget header, then click **Open Logs Folder** to inspect activity logs and diagnostics in Windows Explorer.
 
 ---
 
