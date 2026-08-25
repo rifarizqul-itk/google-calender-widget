@@ -35,6 +35,9 @@
             </div>
 
             <div class="window-controls">
+                <button class="ctrl-btn btn-lang-toggle" id="btnLangToggle" title="Ganti Bahasa (ID / EN)" aria-label="Ganti Bahasa">
+                    <span id="langIndicator" class="lang-indicator">ID</span>
+                </button>
                 <button class="ctrl-btn" id="btnThemeToggle" title="Ganti Tema (Gelap / Terang)" aria-label="Ganti Tema">
                     <svg class="icon-moon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -404,13 +407,23 @@
                 <div class="filter-settings-row">
                     <label class="checkbox-label startup-label">
                         <input type="checkbox" id="checkboxAutoLaunch">
-                        <span>Jalankan otomatis saat Windows dinyalakan</span>
+                        <span id="lblAutoLaunch">Jalankan otomatis saat Windows dinyalakan</span>
                     </label>
+                </div>
+                <div class="filter-language-row">
+                    <div class="language-info">
+                        <span class="language-label" id="lblLanguage">Bahasa Antarmuka</span>
+                        <span class="language-desc" id="descLanguage">Pilih bahasa widget / Interface language</span>
+                    </div>
+                    <div class="lang-switch-group">
+                        <button type="button" class="lang-pill-btn active" data-lang="id" id="btnLangId">ID</button>
+                        <button type="button" class="lang-pill-btn" data-lang="en" id="btnLangEn">EN</button>
+                    </div>
                 </div>
                 <div class="filter-diagnostics-row">
                     <div class="diagnostics-info">
-                        <span class="diagnostics-label">Diagnostik Sistem</span>
-                        <span class="diagnostics-desc">File log aktivitas & crash dump</span>
+                        <span class="diagnostics-label" id="lblDiagnostics">Diagnostik Sistem</span>
+                        <span class="diagnostics-desc" id="descDiagnostics">File log aktivitas & crash dump</span>
                     </div>
                     <button type="button" class="btn-logs-link" id="btnOpenLogsFolder" title="Buka folder log di Windows Explorer">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

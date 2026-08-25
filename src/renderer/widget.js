@@ -21,6 +21,11 @@
     const statusDot = syncStatus.querySelector('.status-dot');
     const statusLabel = syncStatus.querySelector('.status-label');
 
+    const btnLangToggle = document.getElementById('btnLangToggle');
+    const langIndicator = document.getElementById('langIndicator');
+    const btnLangId = document.getElementById('btnLangId');
+    const btnLangEn = document.getElementById('btnLangEn');
+
     const btnFilterCalendars = document.getElementById('btnFilterCalendars');
     const btnPin = document.getElementById('btnPin');
     const btnRefresh = document.getElementById('btnRefresh');
@@ -101,6 +106,446 @@
     // Toast Container
     const toastContainer = document.getElementById('toastContainer');
 
+    // Internationalization (i18n) Engine
+    const I18N_STRINGS = {
+        id: {
+            locale: 'id-ID',
+            appTitle: 'Calendar',
+            synced: 'Tersinkron',
+            syncing: 'Menyinkron...',
+            offlineCache: 'Offline (Cache)',
+            notLoggedIn: 'Belum Login',
+            syncFailed: 'Gagal Sinkron',
+            themeDark: 'Ganti ke Mode Gelap',
+            themeLight: 'Ganti ke Mode Terang',
+            langToggle: 'Switch to English',
+            filterCal: 'Pilih Kalender (Pengaturan)',
+            pinActive: 'Widget dipin (Always on Top)',
+            pinInactive: 'Widget dilepas dari layar (Unpinned)',
+            pinTitle: 'Pin / Always on Top',
+            refreshTitle: 'Refresh Jadwal',
+            addEventTitle: 'Tambah Acara Baru',
+            minimizeTitle: 'Minimize Window',
+            closeTitle: 'Tutup Window',
+            
+            bannerUpcoming: 'SEGERA',
+            bannerNoEvents: 'Tidak ada agenda dekat',
+            bannerRelax: 'Santai sejenak',
+            
+            tabAgenda: 'Agenda',
+            tabMonth: 'Kalender',
+            
+            relToday: 'Hari Ini',
+            relTomorrow: 'Besok',
+            relYesterday: 'Kemarin',
+            allDay: 'Sepanjang Hari',
+            
+            ongoing: 'Sedang Berlangsung',
+            finished: 'Selesai',
+            minutesLeft: (m) => `${m} menit lagi`,
+            hoursLeft: (h, m) => m > 0 ? `${h} jam ${m} m lagi` : `${h} jam lagi`,
+            daysLeft: (d) => `${d} hari lagi`,
+            
+            joinMeet: 'Join Meet',
+            emptyAgendaTitle: 'Tidak Ada Jadwal Mendatang',
+            emptyAgendaDesc: 'Semua kegiatan sudah selesai atau belum ada agenda baru yang tersimpan.',
+            emptyAddEvent: 'Tambah Acara Baru',
+            emptyRefresh: 'Perbarui',
+            errorAgendaTitle: 'Gagal Memuat Jadwal',
+            errorAgendaDesc: 'Terjadi gangguan saat mengambil data dari Google Calendar. Periksa koneksi internet atau sesi login akun Anda.',
+            retrySync: 'Coba Sinkron Ulang',
+            
+            weekdays: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+            selectedDateTitle: 'Jadwal Tanggal Ini',
+            noAgendaDate: 'Tidak ada agenda di tanggal ini.',
+            quickAddDate: 'Tambah Acara',
+            
+            modalAddEyebrow: 'AGENDA BARU',
+            modalAddTitle: 'Tambah Acara',
+            lblTargetCalendar: 'Simpan ke Kalender',
+            lblEventTitle: 'Judul Acara',
+            phEventTitle: 'Contoh: Diskusi Roadmap Produk',
+            lblAllDay: 'Acara Seharian (All Day)',
+            lblStart: 'Mulai',
+            lblEnd: 'Selesai',
+            lblLocation: 'Lokasi (Opsional)',
+            phLocation: 'Contoh: Gedung Lab B-204 / Google Meet',
+            lblDesc: 'Deskripsi / Catatan (Opsional)',
+            phDesc: 'Catatan agenda atau tugas...',
+            btnCancel: 'Batal',
+            btnSubmitEvent: 'Simpan ke Google',
+            btnSubmitting: 'Menyimpan...',
+            valEndAfterStart: 'Waktu selesai harus setelah waktu mulai!',
+            toastEventSaved: 'Acara berhasil disimpan ke Google Calendar!',
+            toastEventSaveFailed: (err) => `Gagal menambah acara: ${err}`,
+            
+            detailLocation: 'Lokasi',
+            detailReminders: 'Pengingat',
+            detailDesc: 'Deskripsi / Catatan',
+            detailCreator: 'Pembuat Acara',
+            detailOrganizer: 'Penyelenggara',
+            detailAttendees: (n) => `Peserta (${n}):`,
+            btnJoinMeetFull: 'Gabung Google Meet',
+            btnDeleteEvent: 'Hapus',
+            btnOpenWeb: 'Buka di Web',
+            toastCopyCal: 'URL kalender asli berhasil disalin',
+            toastCopyLoc: 'Lokasi berhasil disalin ke clipboard',
+            toastCopyCreator: 'Info pembuat berhasil disalin ke clipboard',
+            toastEventDeleted: 'Acara berhasil dihapus dari Google Calendar',
+            toastEventDeleteFailed: (err) => `Gagal menghapus acara: ${err}`,
+            
+            settingsEyebrow: 'PENGATURAN',
+            settingsTitle: 'Pengaturan & Kalender',
+            settingsSubtitle: 'Kelola tampilan, bahasa, dan kalender yang aktif',
+            selectAll: 'Pilih Semua',
+            deselectAll: 'Kosongkan',
+            loadingCalendars: 'Memuat kalender...',
+            noCalendarsTitle: 'Tidak Ada Kalender',
+            noCalendarsDesc: 'Tidak ditemukan kalender yang dapat disinkronkan.',
+            failedCalendarsTitle: 'Gagal Memuat Kalender',
+            failedCalendarsDesc: 'Terjadi masalah jaringan saat mengambil daftar kalender.',
+            btnReload: 'Muat Ulang',
+            btnRetry: 'Coba Lagi',
+            lblStartup: 'Jalankan otomatis saat Windows dinyalakan',
+            lblLanguage: 'Bahasa Antarmuka',
+            descLanguage: 'Pilih bahasa antarmuka widget',
+            lblDiagnostics: 'Diagnostik Sistem',
+            descDiagnostics: 'File log aktivitas & crash dump',
+            btnOpenLogs: 'Buka Folder Log',
+            lblAccount: 'Akun Google',
+            descAccount: 'Terhubung dengan Google Calendar',
+            btnLogout: 'Putuskan Akun',
+            btnApplySettings: 'Terapkan Pengaturan',
+            btnApplying: 'Menerapkan...',
+            toastSettingsApplied: 'Pengaturan kalender berhasil diterapkan',
+            toastSettingsFailed: (err) => `Gagal menerapkan pengaturan: ${err}`,
+            
+            confirmDeleteTitle: 'Hapus Acara?',
+            confirmDeleteMsg: (s) => `Apakah Anda yakin ingin menghapus acara "${s}" dari Google Calendar?`,
+            confirmDeleteBtn: 'Ya, Hapus',
+            
+            confirmLogoutTitle: 'Putuskan Akun Google?',
+            confirmLogoutMsg: 'Apakah Anda yakin ingin memutuskan hubungan akun Google? Widget akan kembali ke layar login awal dan jadwal lokal akan dibersihkan.',
+            confirmLogoutBtn: 'Ya, Putuskan Akun',
+            
+            authTitle: 'Google Calendar Widget',
+            authDesc: 'Hubungkan akun Google kamu untuk menampilkan agenda dan jadwal kegiatan harian langsung di desktop.',
+            authBtn: 'Masuk dengan Google',
+            authOpeningBrowser: 'Membuka Browser...',
+            authSuccess: 'Berhasil login dengan akun Google!',
+            authFailed: (err) => `Login gagal: ${err}`,
+            toastAccountDisconnected: 'Akun Google berhasil diputuskan',
+            toastDisconnectFailed: (err) => `Gagal memutuskan akun: ${err}`,
+            toastThemeSwitched: (t) => `Mode ${t === 'light' ? 'Terang' : 'Gelap'} diaktifkan`,
+            toastLangSwitched: 'Bahasa Indonesia diaktifkan',
+            toastOfflineCache: 'Menampilkan agenda offline tersimpan',
+            toastSyncOfflineError: 'Gagal menyinkronkan data terbaru. Menampilkan data cache.'
+        },
+        en: {
+            locale: 'en-US',
+            appTitle: 'Calendar',
+            synced: 'Synced',
+            syncing: 'Syncing...',
+            offlineCache: 'Offline (Cache)',
+            notLoggedIn: 'Not Logged In',
+            syncFailed: 'Sync Failed',
+            themeDark: 'Switch to Dark Mode',
+            themeLight: 'Switch to Light Mode',
+            langToggle: 'Ganti ke Bahasa Indonesia',
+            filterCal: 'Select Calendars (Settings)',
+            pinActive: 'Widget pinned (Always on Top)',
+            pinInactive: 'Widget unpinned from top',
+            pinTitle: 'Pin / Always on Top',
+            refreshTitle: 'Refresh Schedule',
+            addEventTitle: 'Add New Event',
+            minimizeTitle: 'Minimize Window',
+            closeTitle: 'Close Window',
+            
+            bannerUpcoming: 'UPCOMING',
+            bannerNoEvents: 'No upcoming events',
+            bannerRelax: 'Relax for a while',
+            
+            tabAgenda: 'Agenda',
+            tabMonth: 'Calendar',
+            
+            relToday: 'Today',
+            relTomorrow: 'Tomorrow',
+            relYesterday: 'Yesterday',
+            allDay: 'All Day',
+            
+            ongoing: 'In Progress',
+            finished: 'Ended',
+            minutesLeft: (m) => `in ${m}m`,
+            hoursLeft: (h, m) => m > 0 ? `in ${h}h ${m}m` : `in ${h}h`,
+            daysLeft: (d) => `in ${d}d`,
+            
+            joinMeet: 'Join Meet',
+            emptyAgendaTitle: 'No Upcoming Events',
+            emptyAgendaDesc: 'All scheduled activities are done or no new events are found.',
+            emptyAddEvent: 'Add New Event',
+            emptyRefresh: 'Refresh',
+            errorAgendaTitle: 'Failed to Load Schedule',
+            errorAgendaDesc: 'An issue occurred while fetching data from Google Calendar. Check your internet connection or login status.',
+            retrySync: 'Retry Sync',
+            
+            weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            selectedDateTitle: 'Events for This Date',
+            noAgendaDate: 'No events scheduled on this date.',
+            quickAddDate: 'Add Event',
+            
+            modalAddEyebrow: 'NEW EVENT',
+            modalAddTitle: 'Add Event',
+            lblTargetCalendar: 'Save to Calendar',
+            lblEventTitle: 'Event Title',
+            phEventTitle: 'e.g. Product Roadmap Discussion',
+            lblAllDay: 'All Day Event',
+            lblStart: 'Start',
+            lblEnd: 'End',
+            lblLocation: 'Location (Optional)',
+            phLocation: 'e.g. Lab Building B-204 / Google Meet',
+            lblDesc: 'Description / Notes (Optional)',
+            phDesc: 'Agenda notes or tasks...',
+            btnCancel: 'Cancel',
+            btnSubmitEvent: 'Save to Google',
+            btnSubmitting: 'Saving...',
+            valEndAfterStart: 'End time must be after start time!',
+            toastEventSaved: 'Event saved to Google Calendar successfully!',
+            toastEventSaveFailed: (err) => `Failed to add event: ${err}`,
+            
+            detailLocation: 'Location',
+            detailReminders: 'Reminders',
+            detailDesc: 'Description / Notes',
+            detailCreator: 'Event Creator',
+            detailOrganizer: 'Organizer',
+            detailAttendees: (n) => `Attendees (${n}):`,
+            btnJoinMeetFull: 'Join Google Meet',
+            btnDeleteEvent: 'Delete',
+            btnOpenWeb: 'Open in Web',
+            toastCopyCal: 'Original calendar URL copied to clipboard',
+            toastCopyLoc: 'Location copied to clipboard',
+            toastCopyCreator: 'Creator info copied to clipboard',
+            toastEventDeleted: 'Event deleted from Google Calendar',
+            toastEventDeleteFailed: (err) => `Failed to delete event: ${err}`,
+            
+            settingsEyebrow: 'SETTINGS',
+            settingsTitle: 'Settings & Calendars',
+            settingsSubtitle: 'Manage appearance, language, and active calendars',
+            selectAll: 'Select All',
+            deselectAll: 'Deselect All',
+            loadingCalendars: 'Loading calendars...',
+            noCalendarsTitle: 'No Calendars',
+            noCalendarsDesc: 'No syncable calendars were found.',
+            failedCalendarsTitle: 'Failed to Load Calendars',
+            failedCalendarsDesc: 'Network issue occurred while loading calendar list.',
+            btnReload: 'Reload',
+            btnRetry: 'Retry',
+            lblStartup: 'Launch automatically on Windows startup',
+            lblLanguage: 'Interface Language',
+            descLanguage: 'Choose widget interface language',
+            lblDiagnostics: 'System Diagnostics',
+            descDiagnostics: 'Activity log files & crash reports',
+            btnOpenLogs: 'Open Logs Folder',
+            lblAccount: 'Google Account',
+            descAccount: 'Connected to Google Calendar',
+            btnLogout: 'Disconnect Account',
+            btnApplySettings: 'Apply Settings',
+            btnApplying: 'Applying...',
+            toastSettingsApplied: 'Calendar settings applied successfully',
+            toastSettingsFailed: (err) => `Failed to apply settings: ${err}`,
+            
+            confirmDeleteTitle: 'Delete Event?',
+            confirmDeleteMsg: (s) => `Are you sure you want to delete "${s}" from Google Calendar?`,
+            confirmDeleteBtn: 'Yes, Delete',
+            
+            confirmLogoutTitle: 'Disconnect Google Account?',
+            confirmLogoutMsg: 'Are you sure you want to disconnect your Google account? The widget will return to the sign-in screen and local cached events will be cleared.',
+            confirmLogoutBtn: 'Yes, Disconnect',
+            
+            authTitle: 'Google Calendar Widget',
+            authDesc: 'Connect your Google account to display your daily agenda and schedule directly on your desktop.',
+            authBtn: 'Sign in with Google',
+            authOpeningBrowser: 'Opening Browser...',
+            authSuccess: 'Successfully signed in with Google!',
+            authFailed: (err) => `Login failed: ${err}`,
+            toastAccountDisconnected: 'Google account disconnected successfully',
+            toastDisconnectFailed: (err) => `Failed to disconnect account: ${err}`,
+            toastThemeSwitched: (t) => `${t === 'light' ? 'Light' : 'Dark'} mode activated`,
+            toastLangSwitched: 'English language activated',
+            toastOfflineCache: 'Displaying saved offline schedule',
+            toastSyncOfflineError: 'Failed to sync latest data. Showing cached schedule.'
+        }
+    };
+
+    let currentLang = localStorage.getItem('calendar_widget_lang') || 'en';
+
+    function t(key, ...args) {
+        const langObj = I18N_STRINGS[currentLang] || I18N_STRINGS.en;
+        const val = langObj[key] !== undefined ? langObj[key] : (I18N_STRINGS.en[key] !== undefined ? I18N_STRINGS.en[key] : key);
+        if (typeof val === 'function') {
+            return val(...args);
+        }
+        return val;
+    }
+
+    function applyLanguage(lang) {
+        currentLang = (lang === 'id' || lang === 'en') ? lang : 'en';
+        document.documentElement.setAttribute('lang', currentLang);
+        localStorage.setItem('calendar_widget_lang', currentLang);
+
+        if (langIndicator) {
+            langIndicator.textContent = currentLang.toUpperCase();
+        }
+
+        if (btnLangToggle) {
+            btnLangToggle.setAttribute('title', t('langToggle'));
+        }
+
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        if (btnThemeToggle) {
+            btnThemeToggle.setAttribute('title', currentTheme === 'light' ? t('themeDark') : t('themeLight'));
+        }
+
+        if (btnFilterCalendars) btnFilterCalendars.setAttribute('title', t('filterCal'));
+        if (btnPin) btnPin.setAttribute('title', t('pinTitle'));
+        if (btnRefresh) btnRefresh.setAttribute('title', t('refreshTitle'));
+        if (btnAddEvent) btnAddEvent.setAttribute('title', t('addEventTitle'));
+        if (btnMinimize) btnMinimize.setAttribute('title', t('minimizeTitle'));
+        if (btnClose) btnClose.setAttribute('title', t('closeTitle'));
+
+        // Update Tab Labels
+        const tabSpans = document.querySelectorAll('.tab-btn span');
+        if (tabSpans.length >= 2) {
+            tabSpans[0].textContent = t('tabAgenda');
+            tabSpans[1].textContent = t('tabMonth');
+        }
+
+        // Update Banner Badge
+        const badgeLabel = nextEventBanner ? nextEventBanner.querySelector('.badge-label') : null;
+        if (badgeLabel) badgeLabel.textContent = t('bannerUpcoming');
+
+        // Update Weekdays in Mini Calendar
+        const calWeekdays = document.querySelector('.cal-weekdays');
+        if (calWeekdays) {
+            const days = t('weekdays');
+            calWeekdays.innerHTML = days.map(d => `<span>${d}</span>`).join('');
+        }
+
+        // Update Quick Add Modal Elements
+        const addEyebrow = addEventModal ? addEventModal.querySelector('.modal-eyebrow') : null;
+        if (addEyebrow) addEyebrow.textContent = t('modalAddEyebrow');
+        const addTitle = document.getElementById('addEventModalTitle');
+        if (addTitle) addTitle.textContent = t('modalAddTitle');
+
+        const labelCal = addEventModal ? addEventModal.querySelector('label[for="selectTargetCalendar"]') : null;
+        if (labelCal) labelCal.textContent = t('lblTargetCalendar');
+
+        const labelTitle = addEventModal ? addEventModal.querySelector('label[for="inputEventTitle"]') : null;
+        if (labelTitle) labelTitle.textContent = t('lblEventTitle');
+        if (inputEventTitle) inputEventTitle.placeholder = t('phEventTitle');
+
+        const labelAllDay = addEventModal ? addEventModal.querySelector('.checkbox-label span') : null;
+        if (labelAllDay) labelAllDay.textContent = t('lblAllDay');
+
+        const labelStart = addEventModal ? addEventModal.querySelector('label[for="inputEventStart"]') : null;
+        if (labelStart) labelStart.textContent = t('lblStart');
+
+        const labelEnd = addEventModal ? addEventModal.querySelector('label[for="inputEventEnd"]') : null;
+        if (labelEnd) labelEnd.textContent = t('lblEnd');
+
+        const labelLoc = addEventModal ? addEventModal.querySelector('label[for="inputEventLocation"]') : null;
+        if (labelLoc) labelLoc.textContent = t('lblLocation');
+        if (inputEventLocation) inputEventLocation.placeholder = t('phLocation');
+
+        const labelDesc = addEventModal ? addEventModal.querySelector('label[for="inputEventDescription"]') : null;
+        if (labelDesc) labelDesc.textContent = t('lblDesc');
+        if (inputEventDescription) inputEventDescription.placeholder = t('phDesc');
+
+        if (btnCancelModal) btnCancelModal.textContent = t('btnCancel');
+        const btnSubmitEvent = document.getElementById('btnSubmitEvent');
+        if (btnSubmitEvent) {
+            const span = btnSubmitEvent.querySelector('span');
+            if (span) span.textContent = t('btnSubmitEvent');
+            else btnSubmitEvent.textContent = t('btnSubmitEvent');
+        }
+
+        // Update Filter Modal Elements
+        const filterEyebrow = calendarFilterModal ? calendarFilterModal.querySelector('.modal-eyebrow') : null;
+        if (filterEyebrow) filterEyebrow.textContent = t('settingsEyebrow');
+        const filterTitle = document.getElementById('filterModalTitle');
+        if (filterTitle) filterTitle.textContent = t('settingsTitle');
+        const filterSub = calendarFilterModal ? calendarFilterModal.querySelector('.filter-subtitle') : null;
+        if (filterSub) filterSub.textContent = t('settingsSubtitle');
+
+        if (btnSelectAllCalendars) btnSelectAllCalendars.textContent = t('selectAll');
+        if (btnDeselectAllCalendars) btnDeselectAllCalendars.textContent = t('deselectAll');
+
+        const lblAutoLaunch = document.getElementById('lblAutoLaunch');
+        if (lblAutoLaunch) lblAutoLaunch.textContent = t('lblStartup');
+
+        const lblLanguage = document.getElementById('lblLanguage');
+        if (lblLanguage) lblLanguage.textContent = t('lblLanguage');
+        const descLanguage = document.getElementById('descLanguage');
+        if (descLanguage) descLanguage.textContent = t('descLanguage');
+
+        const lblDiagnostics = document.getElementById('lblDiagnostics');
+        if (lblDiagnostics) lblDiagnostics.textContent = t('lblDiagnostics');
+        const descDiagnostics = document.getElementById('descDiagnostics');
+        if (descDiagnostics) descDiagnostics.textContent = t('descDiagnostics');
+
+        const btnOpenLogsFolder = document.getElementById('btnOpenLogsFolder');
+        if (btnOpenLogsFolder) {
+            const span = btnOpenLogsFolder.querySelector('span');
+            if (span) span.textContent = t('btnOpenLogs');
+        }
+
+        const accountLabel = calendarFilterModal ? calendarFilterModal.querySelector('.account-label') : null;
+        if (accountLabel) accountLabel.textContent = t('lblAccount');
+        const accountDesc = calendarFilterModal ? calendarFilterModal.querySelector('.account-desc') : null;
+        if (accountDesc) accountDesc.textContent = t('descAccount');
+
+        const btnLogoutGoogleAccount = document.getElementById('btnLogoutGoogleAccount');
+        if (btnLogoutGoogleAccount) {
+            const span = btnLogoutGoogleAccount.querySelector('span');
+            if (span) span.textContent = t('btnLogout');
+        }
+
+        if (btnApplyCalendarFilter) {
+            const span = btnApplyCalendarFilter.querySelector('span');
+            if (span) span.textContent = t('btnApplySettings');
+            else btnApplyCalendarFilter.textContent = t('btnApplySettings');
+        }
+
+        // Update Language Pill Buttons in Settings
+        if (btnLangId && btnLangEn) {
+            btnLangId.classList.toggle('active', currentLang === 'id');
+            btnLangEn.classList.toggle('active', currentLang === 'en');
+        }
+
+        // Update Details Modal Static Buttons & Labels
+        if (btnDetailJoinMeet) {
+            const span = btnDetailJoinMeet.querySelector('span');
+            if (span) span.textContent = t('btnJoinMeetFull');
+        }
+        if (btnDetailDelete) {
+            const span = btnDetailDelete.querySelector('span');
+            if (span) span.textContent = t('btnDeleteEvent');
+        }
+        if (btnDetailOpenWeb) {
+            const span = btnDetailOpenWeb.querySelector('span');
+            if (span) span.textContent = t('btnOpenWeb');
+        }
+
+        // Update Auth Overlay
+        if (authOverlay) {
+            const p = authOverlay.querySelector('p');
+            if (p) p.textContent = t('authDesc');
+            if (btnLoginGoogle) {
+                const span = btnLoginGoogle.querySelector('span');
+                if (span) span.textContent = t('authBtn');
+            }
+        }
+    }
+
     // M3 In-App Toast Helper
     function showToast(message, type = 'info', durationMs = 3200) {
         if (!toastContainer) return;
@@ -141,7 +586,7 @@
     });
 
     // In-App Reusable Confirm Dialog Trigger
-    function askConfirmDialog({ title = 'Konfirmasi', message, confirmText = 'Lanjutkan', onConfirm }) {
+    function askConfirmDialog({ title = 'Confirmation', message, confirmText = 'Continue', onConfirm }) {
         pendingDeleteAction = onConfirm;
         const titleEl = document.getElementById('confirmDeleteTitle');
         if (titleEl) titleEl.textContent = title;
@@ -152,18 +597,18 @@
 
     function askConfirmDelete(eventSummary, onConfirm) {
         askConfirmDialog({
-            title: 'Hapus Acara?',
-            message: `Apakah Anda yakin ingin menghapus acara "${eventSummary}" dari Google Calendar?`,
-            confirmText: 'Ya, Hapus',
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMsg', eventSummary),
+            confirmText: t('confirmDeleteBtn'),
             onConfirm
         });
     }
 
     function askConfirmLogout(onConfirm) {
         askConfirmDialog({
-            title: 'Putuskan Akun Google?',
-            message: 'Apakah Anda yakin ingin memutuskan hubungan akun Google? Widget akan kembali ke layar login awal dan jadwal lokal akan dibersihkan.',
-            confirmText: 'Ya, Putuskan Akun',
+            title: t('confirmLogoutTitle'),
+            message: t('confirmLogoutMsg'),
+            confirmText: t('confirmLogoutBtn'),
             onConfirm
         });
     }
@@ -226,18 +671,61 @@
             if (theme === 'light') {
                 iconMoon.style.display = 'none';
                 iconSun.style.display = 'block';
-                btnThemeToggle.setAttribute('title', 'Ganti ke Mode Gelap');
+                btnThemeToggle.setAttribute('title', t('themeDark'));
             } else {
                 iconMoon.style.display = 'block';
                 iconSun.style.display = 'none';
-                btnThemeToggle.setAttribute('title', 'Ganti ke Mode Terang');
+                btnThemeToggle.setAttribute('title', t('themeLight'));
             }
         }
     }
 
-    // Load saved theme or default to dark
+    // Initialize saved language and theme
+    applyLanguage(currentLang);
     const savedTheme = localStorage.getItem('calendar_widget_theme') || 'dark';
     applyTheme(savedTheme);
+
+    // Language Toggle Listeners
+    if (btnLangToggle) {
+        btnLangToggle.addEventListener('click', () => {
+            const nextLang = currentLang === 'id' ? 'en' : 'id';
+            applyLanguage(nextLang);
+            renderTimeline(allEvents);
+            updateNextEventBanner();
+            if (viewMonth.classList.contains('active')) {
+                renderMiniCalendar();
+            }
+            showToast(t('toastLangSwitched'), 'info', 2000);
+        });
+    }
+
+    if (btnLangId) {
+        btnLangId.addEventListener('click', () => {
+            if (currentLang !== 'id') {
+                applyLanguage('id');
+                renderTimeline(allEvents);
+                updateNextEventBanner();
+                if (viewMonth.classList.contains('active')) {
+                    renderMiniCalendar();
+                }
+                showToast(t('toastLangSwitched'), 'info', 2000);
+            }
+        });
+    }
+
+    if (btnLangEn) {
+        btnLangEn.addEventListener('click', () => {
+            if (currentLang !== 'en') {
+                applyLanguage('en');
+                renderTimeline(allEvents);
+                updateNextEventBanner();
+                if (viewMonth.classList.contains('active')) {
+                    renderMiniCalendar();
+                }
+                showToast(t('toastLangSwitched'), 'info', 2000);
+            }
+        });
+    }
 
     if (btnThemeToggle) {
         btnThemeToggle.addEventListener('click', () => {
@@ -248,7 +736,7 @@
             if (viewMonth.classList.contains('active')) {
                 renderMiniCalendar();
             }
-            showToast(`Mode ${newTheme === 'light' ? 'Terang' : 'Gelap'} diaktifkan`, 'info', 2000);
+            showToast(t('toastThemeSwitched', newTheme), 'info', 2000);
         });
     }
 
@@ -348,20 +836,20 @@
 
     btnLoginGoogle.addEventListener('click', async () => {
         btnLoginGoogle.disabled = true;
-        btnLoginGoogle.textContent = 'Membuka Browser...';
+        btnLoginGoogle.textContent = t('authOpeningBrowser');
         try {
             if (window.calendarWidgetAPI) {
                 const res = await window.calendarWidgetAPI.auth.login();
                 if (res.success) {
                     authOverlay.classList.add('hidden');
-                    showToast('Berhasil login dengan akun Google!', 'success');
+                    showToast(t('authSuccess'), 'success');
                     await refreshEvents();
                 } else {
-                    showToast('Login gagal: ' + (res.error || 'Terjadi kesalahan'), 'error');
+                    showToast(t('authFailed', res.error || 'Unknown error'), 'error');
                 }
             }
         } catch (err) {
-            showToast('Kesalahan login: ' + err.message, 'error');
+            showToast(t('authFailed', err.message), 'error');
         } finally {
             btnLoginGoogle.disabled = false;
             btnLoginGoogle.innerHTML = `
@@ -371,7 +859,7 @@
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
-                <span>Masuk dengan Google</span>
+                <span>${t('authBtn')}</span>
             `;
         }
     });
@@ -385,11 +873,11 @@
         const diffTime = target.getTime() - today.getTime();
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 0) return 'Hari Ini';
-        if (diffDays === 1) return 'Besok';
-        if (diffDays === -1) return 'Kemarin';
+        if (diffDays === 0) return t('relToday');
+        if (diffDays === 1) return t('relTomorrow');
+        if (diffDays === -1) return t('relYesterday');
 
-        return date.toLocaleDateString('id-ID', {
+        return date.toLocaleDateString(t('locale'), {
             weekday: 'long',
             day: 'numeric',
             month: 'short'
@@ -398,13 +886,13 @@
 
     // Helper: Time Formatter
     function formatTime(startStr, endStr, isAllDay) {
-        if (isAllDay) return 'Sepanjang Hari';
+        if (isAllDay) return t('allDay');
         const start = new Date(startStr);
         const end = new Date(endStr);
 
         const formatOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-        const startTime = start.toLocaleTimeString('id-ID', formatOptions);
-        const endTime = end.toLocaleTimeString('id-ID', formatOptions);
+        const startTime = start.toLocaleTimeString(t('locale'), formatOptions);
+        const endTime = end.toLocaleTimeString(t('locale'), formatOptions);
 
         return `${startTime} - ${endTime}`;
     }
@@ -416,24 +904,24 @@
         const end = new Date(endStr).getTime();
 
         if (now >= start && now <= end) {
-            return 'Sedang Berlangsung';
+            return t('ongoing');
         }
 
         const diffMs = start - now;
-        if (diffMs < 0) return 'Selesai';
+        if (diffMs < 0) return t('finished');
 
         const diffMinutes = Math.floor(diffMs / (1000 * 60));
         const diffHours = Math.floor(diffMinutes / 60);
         const diffDays = Math.floor(diffHours / 24);
 
         if (diffMinutes < 60) {
-            return `${diffMinutes} menit lagi`;
+            return t('minutesLeft', diffMinutes);
         }
         if (diffHours < 24) {
             const remainingMinutes = diffMinutes % 60;
-            return remainingMinutes > 0 ? `${diffHours} jam ${remainingMinutes} m lagi` : `${diffHours} jam lagi`;
+            return t('hoursLeft', diffHours, remainingMinutes);
         }
-        return `${diffDays} hari lagi`;
+        return t('daysLeft', diffDays);
     }
 
     // Helper: Dynamic Hostname / Text Parser (Clean, generic without hardcoding)
@@ -518,19 +1006,16 @@
     // Helper: Safe Rich HTML Description Formatter
     function formatDescriptionHtml(raw) {
         if (!raw) return '';
-        // If it contains HTML tags (like <ul>, <li>, <br>, <p>, <b>, <a>)
         if (/<[a-z][\s\S]*>/i.test(raw)) {
             try {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(raw, 'text/html');
-                // Strip dangerous scripts or iframes
                 doc.querySelectorAll('script, iframe, style, object, embed').forEach(el => el.remove());
                 return doc.body.innerHTML;
             } catch {
                 return raw;
             }
         } else {
-            // Plain text: escape and convert newlines to <br> and URLs to clickable links
             return raw
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -546,9 +1031,9 @@
         const futureEvents = allEvents.filter(ev => new Date(ev.end).getTime() > now);
 
         if (futureEvents.length === 0) {
-            nextEventTitle.textContent = 'Tidak ada agenda dekat';
+            nextEventTitle.textContent = t('bannerNoEvents');
             nextEventTime.textContent = '--:--';
-            nextEventCountdown.textContent = 'Santai sejenak';
+            nextEventCountdown.textContent = t('bannerRelax');
             nextEventBanner.onclick = null;
             return;
         }
@@ -568,7 +1053,7 @@
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         const colorInfo = resolveEventColors(ev.calendarColor, isLight);
-        const calParse = parseHostOrText(ev.calendarName || 'Kalender');
+        const calParse = parseHostOrText(ev.calendarName || t('appTitle'));
 
         detailCalBadge.textContent = calParse.display;
         detailCalBadge.title = calParse.raw;
@@ -581,7 +1066,7 @@
             btnCopyCalLink.onclick = () => {
                 navigator.clipboard.writeText(calParse.raw);
                 btnCopyCalLink.classList.add('copied');
-                showToast('URL kalender asli berhasil disalin', 'info', 2000);
+                showToast(t('toastCopyCal'), 'info', 2000);
                 setTimeout(() => { btnCopyCalLink.classList.remove('copied'); }, 2000);
             };
         } else {
@@ -591,7 +1076,7 @@
         detailTitle.textContent = ev.summary;
 
         const dateObj = new Date(ev.start);
-        const dateFormatted = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        const dateFormatted = dateObj.toLocaleDateString(t('locale'), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         const timeFormatted = formatTime(ev.start, ev.end, ev.isAllDay);
         detailTime.textContent = `${dateFormatted} • ${timeFormatted}`;
         detailCountdown.textContent = getEventCountdown(ev.start, ev.end);
@@ -615,7 +1100,7 @@
             btnCopyLocation.onclick = () => {
                 navigator.clipboard.writeText(ev.location);
                 btnCopyLocation.classList.add('copied');
-                showToast('Lokasi berhasil disalin ke clipboard', 'info', 2000);
+                showToast(t('toastCopyLoc'), 'info', 2000);
                 setTimeout(() => { btnCopyLocation.classList.remove('copied'); }, 2000);
             };
         } else {
@@ -651,7 +1136,7 @@
             detailDescSection.style.display = 'none';
         }
 
-        // Creator / Organizer (Structured Card with Dynamic Hostname & Copy button)
+        // Creator / Organizer
         const creatorName = ev.creator?.displayName || ev.creator?.email || ev.organizer?.displayName || ev.organizer?.email;
         if (creatorName) {
             const creatorParse = parseHostOrText(creatorName);
@@ -661,7 +1146,7 @@
             btnCopyCreator.onclick = () => {
                 navigator.clipboard.writeText(creatorParse.raw);
                 btnCopyCreator.classList.add('copied');
-                showToast('Info pembuat berhasil disalin ke clipboard', 'info', 2000);
+                showToast(t('toastCopyCreator'), 'info', 2000);
                 setTimeout(() => { btnCopyCreator.classList.remove('copied'); }, 2000);
             };
         } else {
@@ -671,7 +1156,7 @@
         // Attendees
         if (ev.attendees && ev.attendees.length > 0) {
             detailAttendeesSection.style.display = 'flex';
-            detailAttendeesLabel.textContent = `Peserta (${ev.attendees.length}):`;
+            detailAttendeesLabel.textContent = t('detailAttendees', ev.attendees.length);
             let attendeesHtml = '';
             ev.attendees.forEach(a => {
                 const statusClass = a.responseStatus === 'accepted' ? 'accepted' : (a.responseStatus === 'declined' ? 'declined' : 'tentative');
@@ -704,10 +1189,10 @@
                         eventId: ev.id
                     });
                     eventDetailsModal.classList.remove('active');
-                    showToast('Acara berhasil dihapus dari Google Calendar', 'success');
+                    showToast(t('toastEventDeleted'), 'success');
                     await refreshEvents();
                 } catch (err) {
-                    showToast('Gagal menghapus acara: ' + err.message, 'error');
+                    showToast(t('toastEventDeleteFailed', err.message), 'error');
                 } finally {
                     btnDetailDelete.disabled = false;
                 }
@@ -724,7 +1209,7 @@
     // Feedback States for Timeline (Skeleton, Empty, Error)
     function renderTimelineSkeleton() {
         eventsTimeline.innerHTML = `
-            <div class="skeleton-timeline" aria-busy="true" aria-label="Memuat jadwal...">
+            <div class="skeleton-timeline" aria-busy="true" aria-label="${t('syncing')}">
                 <div class="skeleton-date-header">
                     <div class="skeleton-pill" style="width: 70px;"></div>
                     <div class="skeleton-pill" style="width: 22px;"></div>
@@ -769,16 +1254,16 @@
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
                 </div>
-                <h4 class="empty-title">Tidak Ada Jadwal Mendatang</h4>
-                <p class="empty-desc">Semua kegiatan sudah selesai atau belum ada agenda baru yang tersimpan.</p>
+                <h4 class="empty-title">${t('emptyAgendaTitle')}</h4>
+                <p class="empty-desc">${t('emptyAgendaDesc')}</p>
                 <div class="empty-actions">
                     <button type="button" class="btn-empty-add" id="btnEmptyAddEvent">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>Tambah Acara Baru</span>
+                        <span>${t('emptyAddEvent')}</span>
                     </button>
                     <button type="button" class="btn-empty-refresh" id="btnEmptyRefresh">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                        <span>Perbarui</span>
+                        <span>${t('emptyRefresh')}</span>
                     </button>
                 </div>
             </div>
@@ -804,12 +1289,12 @@
                         <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
                 </div>
-                <h4 class="error-title">Gagal Memuat Jadwal</h4>
-                <p class="error-desc">${errorMsg || 'Terjadi gangguan saat mengambil data dari Google Calendar. Periksa koneksi internet atau sesi login akun Anda.'}</p>
+                <h4 class="error-title">${t('errorAgendaTitle')}</h4>
+                <p class="error-desc">${errorMsg || t('errorAgendaDesc')}</p>
                 <div class="error-actions">
                     <button type="button" class="btn-retry-sync" id="btnRetrySync">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                        <span>Coba Sinkron Ulang</span>
+                        <span>${t('retrySync')}</span>
                     </button>
                 </div>
             </div>
@@ -865,12 +1350,12 @@
                 const timeStr = formatTime(ev.start, ev.end, ev.isAllDay);
                 const calParse = parseHostOrText(ev.calendarName);
                 const meetBtn = ev.hangoutLink ? `
-                    <a href="#" class="event-meet-btn" data-event-idx="${idx}" data-date-key="${dateKey}" title="Buka Google Meet">
+                    <a href="#" class="event-meet-btn" data-event-idx="${idx}" data-date-key="${dateKey}" title="${t('joinMeet')}">
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="23 7 16 12 23 17 23 7"/>
                             <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                         </svg>
-                        <span>Join Meet</span>
+                        <span>${t('joinMeet')}</span>
                         <span class="meet-btn-arrow">↗</span>
                     </a>
                 ` : '';
@@ -947,7 +1432,7 @@
         const year = currentMonthDate.getFullYear();
         const month = currentMonthDate.getMonth();
 
-        monthYearLabel.textContent = currentMonthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        monthYearLabel.textContent = currentMonthDate.toLocaleDateString(t('locale'), { month: 'long', year: 'numeric' });
 
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1014,7 +1499,7 @@
         const [year, month, day] = dateStr.split('-').map(Number);
         const selDate = new Date(year, month - 1, day);
 
-        selectedDateTitle.textContent = selDate.toLocaleDateString('id-ID', {
+        selectedDateTitle.textContent = selDate.toLocaleDateString(t('locale'), {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
@@ -1029,10 +1514,10 @@
         if (currentDayMatches.length === 0) {
             dayEventsList.innerHTML = `
                 <div class="empty-day-state">
-                    <span>Tidak ada agenda di tanggal ini.</span>
+                    <span>${t('noAgendaDate')}</span>
                     <button type="button" class="btn-quick-add-day" id="btnQuickAddDay">
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>Tambah Acara</span>
+                        <span>${t('quickAddDate')}</span>
                     </button>
                 </div>
             `;
@@ -1110,7 +1595,7 @@
         
         // Show realistic Skeleton Checklist
         calendarChecklistContainer.innerHTML = `
-            <div class="skeleton-checklist" aria-busy="true" aria-label="Memuat daftar kalender...">
+            <div class="skeleton-checklist" aria-busy="true" aria-label="${t('loadingCalendars')}">
                 <div class="skeleton-checklist-item">
                     <div class="skeleton-box" style="width: 16px; height: 16px; border-radius: 4px;"></div>
                     <div class="skeleton-box" style="width: 10px; height: 10px; border-radius: 9999px;"></div>
@@ -1161,11 +1646,11 @@
                                     <line x1="3" y1="10" x2="21" y2="10"/>
                                 </svg>
                             </div>
-                            <h4 class="empty-title" style="font-size: 13px;">Tidak Ada Kalender</h4>
-                            <p class="empty-desc" style="font-size: 11px;">Tidak ditemukan kalender yang dapat disinkronkan.</p>
+                            <h4 class="empty-title" style="font-size: 13px;">${t('noCalendarsTitle')}</h4>
+                            <p class="empty-desc" style="font-size: 11px;">${t('noCalendarsDesc')}</p>
                             <div class="empty-actions">
                                 <button type="button" class="btn-retry-sync" id="btnRetryLoadCal" style="height: 32px; font-size: 11px;">
-                                    <span>Muat Ulang</span>
+                                    <span>${t('btnReload')}</span>
                                 </button>
                             </div>
                         </div>
@@ -1180,7 +1665,9 @@
 
                 calendars.forEach(cal => {
                     const isChecked = selectedIds.includes(cal.id);
-                    const desc = cal.primary ? 'Kalender Utama' : (cal.description || 'Kalender Google');
+                    const primaryLabel = currentLang === 'en' ? 'Primary Calendar' : 'Kalender Utama';
+                    const googleLabel = currentLang === 'en' ? 'Google Calendar' : 'Kalender Google';
+                    const desc = cal.primary ? primaryLabel : (cal.description || googleLabel);
                     html += `
                         <label class="calendar-checklist-item" data-id="${cal.id}">
                             <input type="checkbox" class="cal-checkbox" value="${cal.id}" ${isChecked ? 'checked' : ''}>
@@ -1204,11 +1691,11 @@
                                 <line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
                         </div>
-                        <h4 class="error-title" style="font-size: 13px;">Gagal Memuat Kalender</h4>
-                        <p class="error-desc" style="font-size: 11px;">${err.message || 'Terjadi masalah jaringan saat mengambil daftar kalender.'}</p>
+                        <h4 class="error-title" style="font-size: 13px;">${t('failedCalendarsTitle')}</h4>
+                        <p class="error-desc" style="font-size: 11px;">${err.message || t('failedCalendarsDesc')}</p>
                         <div class="error-actions">
                             <button type="button" class="btn-retry-sync" id="btnRetryLoadCal" style="height: 32px; font-size: 11px;">
-                                <span>Coba Lagi</span>
+                                <span>${t('btnRetry')}</span>
                             </button>
                         </div>
                     </div>
@@ -1257,9 +1744,9 @@
                     eventsTimeline.innerHTML = '';
                     authOverlay.classList.remove('hidden');
                     updateNextEventBanner();
-                    showToast('Akun Google berhasil diputuskan', 'info', 3000);
+                    showToast(t('toastAccountDisconnected'), 'info', 3000);
                 } catch (err) {
-                    showToast('Gagal memutuskan akun: ' + err.message, 'error');
+                    showToast(t('toastDisconnectFailed', err.message), 'error');
                 } finally {
                     btnLogoutGoogleAccount.disabled = false;
                 }
@@ -1273,7 +1760,7 @@
         const checkboxAutoLaunch = document.getElementById('checkboxAutoLaunch');
 
         btnApplyCalendarFilter.disabled = true;
-        btnApplyCalendarFilter.textContent = 'Menerapkan...';
+        btnApplyCalendarFilter.textContent = t('btnApplying');
 
         try {
             if (window.calendarWidgetAPI) {
@@ -1283,13 +1770,13 @@
                 }
             }
             calendarFilterModal.classList.remove('active');
-            showToast('Pengaturan kalender berhasil diterapkan', 'success');
+            showToast(t('toastSettingsApplied'), 'success');
             await refreshEvents();
         } catch (err) {
-            showToast('Gagal menerapkan pengaturan: ' + err.message, 'error');
+            showToast(t('toastSettingsFailed', err.message), 'error');
         } finally {
             btnApplyCalendarFilter.disabled = false;
-            btnApplyCalendarFilter.textContent = 'Terapkan Pengaturan';
+            btnApplyCalendarFilter.textContent = t('btnApplySettings');
         }
     });
 
@@ -1318,7 +1805,8 @@
             if (listRes && listRes.calendars) {
                 let optionsHtml = '';
                 listRes.calendars.forEach(c => {
-                    optionsHtml += `<option value="${c.id}">${c.summary}${c.primary ? ' (Utama)' : ''}</option>`;
+                    const primarySuffix = c.primary ? (currentLang === 'en' ? ' (Primary)' : ' (Utama)') : '';
+                    optionsHtml += `<option value="${c.id}">${c.summary}${primarySuffix}</option>`;
                 });
                 selectTargetCalendar.innerHTML = optionsHtml;
             }
@@ -1407,7 +1895,7 @@
             const startTime = new Date(startVal).getTime();
             const endTime = new Date(endVal).getTime();
             if (endTime <= startTime) {
-                showToast('Waktu selesai harus setelah waktu mulai!', 'error');
+                showToast(t('valEndAfterStart'), 'error');
                 inputEventEnd.focus();
                 return;
             }
@@ -1423,21 +1911,24 @@
             isAllDay
         };
 
+        const btn = document.getElementById('btnSubmitEvent');
         try {
-            const btn = document.getElementById('btnSubmitEvent');
-            btn.disabled = true;
-            btn.textContent = 'Menyimpan...';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = t('btnSubmitting');
+            }
 
             await window.calendarWidgetAPI.calendar.createQuickEvent(payload);
             addEventModal.classList.remove('active');
-            showToast('Acara berhasil disimpan ke Google Calendar!', 'success');
+            showToast(t('toastEventSaved'), 'success');
             await refreshEvents();
         } catch (err) {
-            showToast('Gagal menambah acara: ' + err.message, 'error');
+            showToast(t('toastEventSaveFailed', err.message), 'error');
         } finally {
-            const btn = document.getElementById('btnSubmitEvent');
-            btn.disabled = false;
-            btn.textContent = 'Simpan ke Google';
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = t('btnSubmitEvent');
+            }
         }
     });
 
@@ -1446,7 +1937,7 @@
         const icon = btnRefresh.querySelector('.icon-refresh');
         if (icon) icon.classList.add('spinning');
         statusDot.className = 'status-dot syncing';
-        statusLabel.textContent = 'Menyinkron...';
+        statusLabel.textContent = t('syncing');
 
         // If timeline is completely blank (e.g. initial start), render skeleton
         if (allEvents.length === 0 && !eventsTimeline.querySelector('.skeleton-timeline')) {
@@ -1458,7 +1949,7 @@
             if (!res.authenticated) {
                 authOverlay.classList.remove('hidden');
                 statusDot.className = 'status-dot offline';
-                statusLabel.textContent = 'Belum Login';
+                statusLabel.textContent = t('notLoggedIn');
                 return;
             }
 
@@ -1466,10 +1957,10 @@
             allEvents = res.events || [];
 
             statusDot.className = res.fromCache ? 'status-dot offline' : 'status-dot';
-            statusLabel.textContent = res.fromCache ? 'Offline (Cache)' : 'Tersinkron';
+            statusLabel.textContent = res.fromCache ? t('offlineCache') : t('synced');
 
             if (res.fromCache) {
-                showToast('Menampilkan agenda offline tersimpan', 'info', 2500);
+                showToast(t('toastOfflineCache'), 'info', 2500);
             }
 
             renderTimeline(allEvents);
@@ -1480,12 +1971,12 @@
         } catch (error) {
             console.error('Error refreshing events:', error);
             statusDot.className = 'status-dot offline';
-            statusLabel.textContent = 'Gagal Sinkron';
+            statusLabel.textContent = t('syncFailed');
 
             if (allEvents.length === 0) {
-                renderTimelineError('Gagal menghubungkan ke Google Calendar. Silakan periksa jaringan internet Anda atau coba sinkronkan kembali.');
+                renderTimelineError(t('errorAgendaDesc'));
             } else {
-                showToast('Gagal menyinkronkan data terbaru. Menampilkan data cache.', 'error', 3500);
+                showToast(t('toastSyncOfflineError'), 'error', 3500);
             }
         } finally {
             if (icon) icon.classList.remove('spinning');

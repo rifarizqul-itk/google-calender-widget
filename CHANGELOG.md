@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.5] - 2026-08-26
 
 ### Added
+- **Internationalization (i18n) Engine**: Added seamless multilingual support with real-time switching between English (`EN`) and Bahasa Indonesia (`ID`) via the header toggle or Settings modal, with persistent user preferences.
 - **Account Disconnect (Logout)**: Added an explicit account disconnection action in the Calendar Settings modal with an in-app confirmation dialog, clearing OAuth tokens and local cache files.
 - **Dynamic Domain Parsing**: Automatic hostname extraction for long calendar names and creator/organizer URLs, paired with clipboard copy action buttons.
 - **Exclusive All-Day Event Handling**: Corrected all-day event creation logic to use exclusive end dates (`+1 day`) matching the Google Calendar API v3 specification.

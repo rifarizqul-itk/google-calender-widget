@@ -17,6 +17,7 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 - **Dual View Modes**: Switch between a chronological Agenda timeline with relative day groupings and a Mini Month interactive grid.
 - **Smart Color & Contrast Engine**: Preserves your Google Calendar badge colors while applying ITU-R BT.709 relative luminance adjustments for crisp contrast across light and dark themes.
+- **Multilingual Support (EN / ID)**: Instant language switching between English and Bahasa Indonesia with a single header click or via the Settings menu, complete with localized date/time formatting and persistent preferences.
 - **Live Next-Event Ticker**: Header banner with live countdown timers that automatically pauses when the widget is minimized or hidden to maintain zero background CPU usage.
 - **Direct Google Meet Launcher**: One-click join buttons for video conferences and meeting links extracted directly from Google Calendar event payloads.
 - **In-App Quick Event Management**: Create new timed or all-day events and delete existing entries with in-app confirmation dialogs.

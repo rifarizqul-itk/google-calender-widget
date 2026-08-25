@@ -2,9 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { formatEventTime, getDayHeader, getEventCountdown } = require('../src/utils/dateHelper');
 
-test('formatEventTime: formats all-day events correctly', () => {
-    const result = formatEventTime('2026-03-25', '2026-03-26', true);
-    assert.strictEqual(result, 'Sepanjang Hari');
+test('formatEventTime: formats all-day events correctly (ID & EN)', () => {
+    const resultId = formatEventTime('2026-03-25', '2026-03-26', true, 'id');
+    assert.strictEqual(resultId, 'Sepanjang Hari');
+    const resultEn = formatEventTime('2026-03-25', '2026-03-26', true, 'en');
+    assert.strictEqual(resultEn, 'All Day');
 });
 
 test('formatEventTime: formats timed events correctly', () => {
@@ -14,28 +16,31 @@ test('formatEventTime: formats timed events correctly', () => {
     assert.ok(result.includes('-'));
 });
 
-test('getDayHeader: identifies today correctly', () => {
+test('getDayHeader: identifies today correctly (ID & EN)', () => {
     const today = new Date();
-    const result = getDayHeader(today);
-    assert.strictEqual(result, 'Hari Ini');
+    assert.strictEqual(getDayHeader(today, 'id'), 'Hari Ini');
+    assert.strictEqual(getDayHeader(today, 'en'), 'Today');
 });
 
-test('getDayHeader: identifies tomorrow correctly', () => {
+test('getDayHeader: identifies tomorrow correctly (ID & EN)', () => {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const result = getDayHeader(tomorrow);
-    assert.strictEqual(result, 'Besok');
+    assert.strictEqual(getDayHeader(tomorrow, 'id'), 'Besok');
+    assert.strictEqual(getDayHeader(tomorrow, 'en'), 'Tomorrow');
 });
 
-test('getEventCountdown: calculates future countdown', () => {
+test('getEventCountdown: calculates future countdown (ID & EN)', () => {
     const in30Mins = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-    const result = getEventCountdown(in30Mins);
-    assert.ok(result.text.includes('menit lagi') || result.text.includes('30'));
-    assert.strictEqual(result.isNow, false);
+    const resultId = getEventCountdown(in30Mins, 'id');
+    assert.ok(resultId.text.includes('menit lagi') || resultId.text.includes('30'));
+    assert.strictEqual(resultId.isNow, false);
+
+    const resultEn = getEventCountdown(in30Mins, 'en');
+    assert.ok(resultEn.text.includes('in') && resultEn.text.includes('m'));
+    assert.strictEqual(resultEn.isNow, false);
 });
 
-test('getEventCountdown: identifies ongoing event', () => {
+test('getEventCountdown: identifies ongoing event (ID & EN)', () => {
     const past = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    const result = getEventCountdown(past);
-    assert.strictEqual(result.text, 'Sedang Berlangsung');
-    assert.strictEqual(result.isNow, true);
+    assert.strictEqual(getEventCountdown(past, 'id').text, 'Sedang Berlangsung');
+    assert.strictEqual(getEventCountdown(past, 'en').text, 'In Progress');
 });
