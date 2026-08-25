@@ -76,7 +76,13 @@ function registerIpcHandlers() {
 
     ipcMain.handle('auth:login', async () => {
         logger.info('Auth', 'OAuth login requested from UI');
-        return await authService.loginWithBrowser();
+        try {
+            const tokens = await authService.loginWithBrowser();
+            return { success: true, tokens };
+        } catch (err) {
+            logger.error('Auth', 'OAuth login failed:', err);
+            return { success: false, error: err.message || 'Gagal login ke Google Calendar' };
+        }
     });
 
     ipcMain.handle('auth:logout', () => {

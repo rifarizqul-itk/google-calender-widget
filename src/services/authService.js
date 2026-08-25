@@ -182,80 +182,92 @@ class AuthService {
                 reject(new Error('Waktu otorisasi Google login habis (batas waktu 5 menit).'));
             }, 5 * 60 * 1000);
 
-            this.activeServer.on('error', (err) => {
-                cleanupServer();
-                reject(err);
-            });
-
-            // Listen on port 0 to allow OS to allocate any free ephemeral port
-            this.activeServer.listen(0, '127.0.0.1', () => {
-                const address = this.activeServer.address();
-                const serverPort = address.port;
-                const redirectUri = `http://127.0.0.1:${serverPort}`;
-                this.oauth2Client.redirectUri = redirectUri;
-
-                const authUrl = this.oauth2Client.generateAuthUrl({
-                    access_type: 'offline',
-                    scope: SCOPES,
-                    prompt: 'consent',
-                    redirect_uri: redirectUri
-                });
-
-                this.activeServer.on('request', async (req, res) => {
-                    try {
-                        const reqUrl = new URL(req.url, redirectUri);
-                        const code = reqUrl.searchParams.get('code');
-                        const error = reqUrl.searchParams.get('error');
-
-                        if (error) {
-                            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-                            res.end(`
-                                <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #12141d; color: #ff5e5e;">
-                                    <h2>❌ Login Dibatalkan atau Gagal</h2>
-                                    <p>${error}</p>
-                                    <p>Silakan tutup tab ini dan coba lagi dari widget.</p>
-                                </div>
-                            `);
-                            cleanupServer();
-                            return reject(new Error(`OAuth Error: ${error}`));
-                        }
-
-                        if (code) {
-                            const { tokens } = await this.oauth2Client.getToken({
-                                code,
-                                redirect_uri: redirectUri
-                            });
-
-                            this.oauth2Client.setCredentials(tokens);
-                            this.saveTokens(tokens);
-
-                            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-                            res.end(`
-                                <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #0f172a; color: #f8fafc;">
-                                    <h1 style="color: #38bdf8;">✨ Login Berhasil!</h1>
-                                    <p style="font-size: 16px; color: #94a3b8;">Google Calendar kamu sekarang sudah terhubung dengan Desktop Widget.</p>
-                                    <p style="font-size: 14px; margin-top: 20px;">Silakan tutup tab browser ini dan kembali ke desktop kamu.</p>
-                                </div>
-                            `);
-
-                            setTimeout(() => {
-                                cleanupServer();
-                            }, 1000);
-
-                            console.log('[AuthService] OAuth login successful on port:', serverPort);
-                            resolve(tokens);
-                        }
-                    } catch (err) {
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Authentication failed: ' + err.message);
+            const startServer = (preferredPort = 54321) => {
+                this.activeServer.once('error', (err) => {
+                    if (err.code === 'EADDRINUSE' && preferredPort !== 0) {
+                        console.warn(`[AuthService] Port ${preferredPort} in use, falling back to ephemeral port...`);
+                        try { this.activeServer.close(); } catch {}
+                        this.activeServer = http.createServer();
+                        startServer(0);
+                    } else {
                         cleanupServer();
                         reject(err);
                     }
                 });
 
-                console.log(`[AuthService] Listening on ${redirectUri} for OAuth callback...`);
-                shell.openExternal(authUrl);
-            });
+                this.activeServer.listen(preferredPort, '127.0.0.1', () => {
+                    const address = this.activeServer.address();
+                    const serverPort = address.port;
+                    const redirectUri = `http://127.0.0.1:${serverPort}`;
+                    this.oauth2Client.redirectUri = redirectUri;
+
+                    const authUrl = this.oauth2Client.generateAuthUrl({
+                        access_type: 'offline',
+                        scope: SCOPES,
+                        prompt: 'consent',
+                        redirect_uri: redirectUri
+                    });
+
+                    this.activeServer.on('request', async (req, res) => {
+                        try {
+                            const reqUrl = new URL(req.url, redirectUri);
+                            const code = reqUrl.searchParams.get('code');
+                            const error = reqUrl.searchParams.get('error');
+
+                            if (error) {
+                                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+                                res.end(`
+                                    <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #12141d; color: #ff5e5e;">
+                                        <h2>❌ Login Dibatalkan atau Gagal</h2>
+                                        <p>${error}</p>
+                                        <p>Silakan tutup tab ini dan coba lagi dari widget.</p>
+                                    </div>
+                                `);
+                                cleanupServer();
+                                return reject(new Error(`OAuth Error: ${error}`));
+                            }
+
+                            if (code) {
+                                const { tokens } = await this.oauth2Client.getToken({
+                                    code,
+                                    redirect_uri: redirectUri
+                                });
+
+                                this.oauth2Client.setCredentials(tokens);
+                                this.saveTokens(tokens);
+
+                                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+                                res.end(`
+                                    <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #0f172a; color: #f8fafc;">
+                                        <h1 style="color: #38bdf8;">✨ Login Berhasil!</h1>
+                                        <p style="font-size: 16px; color: #94a3b8;">Google Calendar kamu sekarang sudah terhubung dengan Desktop Widget.</p>
+                                        <p style="font-size: 14px; margin-top: 20px;">Silakan tutup tab browser ini dan kembali ke desktop kamu.</p>
+                                    </div>
+                                `);
+
+                                setTimeout(() => {
+                                    cleanupServer();
+                                }, 1000);
+
+                                const { logger } = require('../utils/logger');
+                                logger.info('AuthService', `OAuth login successful on port ${serverPort}`);
+                                resolve(tokens);
+                            }
+                        } catch (err) {
+                            res.writeHead(500, { 'Content-Type': 'text/plain' });
+                            res.end('Authentication failed: ' + err.message);
+                            cleanupServer();
+                            reject(err);
+                        }
+                    });
+
+                    const { logger } = require('../utils/logger');
+                    logger.info('AuthService', `Listening on ${redirectUri} for OAuth callback...`);
+                    shell.openExternal(authUrl);
+                });
+            };
+
+            startServer(54321);
         });
     }
 

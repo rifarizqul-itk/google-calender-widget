@@ -1010,7 +1010,26 @@
             try {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(raw, 'text/html');
-                doc.querySelectorAll('script, iframe, style, object, embed').forEach(el => el.remove());
+                // Strip dangerous elements
+                doc.querySelectorAll('script, iframe, style, object, embed, form, input, button, link, meta').forEach(el => el.remove());
+                // Strip dangerous event handler attributes and javascript: links
+                doc.querySelectorAll('*').forEach(el => {
+                    const attrs = Array.from(el.attributes || []);
+                    attrs.forEach(attr => {
+                        if (attr.name.toLowerCase().startsWith('on')) {
+                            el.removeAttribute(attr.name);
+                        }
+                    });
+                    if (el.tagName.toLowerCase() === 'a') {
+                        const href = el.getAttribute('href') || '';
+                        if (/^(javascript|data|vbscript):/i.test(href.trim())) {
+                            el.removeAttribute('href');
+                        } else {
+                            el.setAttribute('target', '_blank');
+                            el.setAttribute('rel', 'noopener noreferrer');
+                        }
+                    }
+                });
                 return doc.body.innerHTML;
             } catch {
                 return raw;
@@ -1020,7 +1039,7 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
-                .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')
+                .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
                 .replace(/\n/g, '<br>');
         }
     }
