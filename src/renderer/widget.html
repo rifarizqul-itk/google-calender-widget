@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com;">
+    <title>Google Calendar Widget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Roboto+Flex:opsz,wght@8..144,300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="widget.css">
+</head>
+<body>
+    <div class="widget-container" id="widgetApp">
+        <!-- Ambient Mesh Lighting Orbs (Linear/Apple Aesthetic) -->
+        <div class="ambient-glow glow-top" aria-hidden="true"></div>
+        <div class="ambient-glow glow-bottom" aria-hidden="true"></div>
+
+        <!-- Draggable Titlebar & Controls -->
+        <header class="widget-header">
+            <div class="brand-section">
+                <div class="calendar-icon-badge" title="Google Calendar">
+                    <span class="badge-top-stripe"></span>
+                    <span id="currentDateNumber">--</span>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-row">
+                        <span class="app-title">Calendar</span>
+                    </div>
+                    <span class="sync-indicator" id="syncStatus">
+                        <span class="status-dot"></span>
+                        <span class="status-label">Tersinkron</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="window-controls">
+                <button class="ctrl-btn" id="btnThemeToggle" title="Ganti Tema (Gelap / Terang)" aria-label="Ganti Tema">
+                    <svg class="icon-moon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+                <button class="ctrl-btn" id="btnFilterCalendars" title="Pilih Kalender (Filter)" aria-label="Pilih Kalender">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                </button>
+                <button class="ctrl-btn" id="btnPin" title="Pin / Always on Top" aria-label="Always on Top">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="17" x2="12" y2="22"/>
+                        <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v8l-2 2v2z"/>
+                    </svg>
+                </button>
+                <button class="ctrl-btn" id="btnRefresh" title="Refresh Jadwal" aria-label="Refresh Jadwal">
+                    <svg class="icon-refresh" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                </button>
+                <button class="ctrl-btn" id="btnAddEvent" title="Tambah Acara Baru" aria-label="Tambah Acara">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                </button>
+
+                <span class="ctrl-divider" aria-hidden="true"></span>
+
+                <button class="ctrl-btn ctrl-minimize" id="btnMinimize" title="Minimize Window" aria-label="Minimize Window">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                </button>
+                <button class="ctrl-btn ctrl-close" id="btnClose" title="Tutup Window" aria-label="Tutup Window">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Live Command-Center Hero Banner ("At a Glance") -->
+        <section class="next-event-banner" id="nextEventBanner">
+            <div class="banner-inner-core">
+                <div class="banner-badge">
+                    <span class="pulse-ring"></span>
+                    <span class="badge-label">SEGERA</span>
+                </div>
+                <div class="banner-content">
+                    <h4 class="next-event-title" id="nextEventTitle">Tidak ada agenda dekat</h4>
+                    <div class="next-event-meta">
+                        <span class="next-event-time" id="nextEventTime">--:--</span>
+                        <span class="meta-separator">•</span>
+                        <span class="next-event-countdown" id="nextEventCountdown">Santai sejenak</span>
+                    </div>
+                </div>
+                <div class="banner-action-arrow">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Switcher Navigation (Floating Glass Capsule) -->
+        <nav class="view-tabs" role="tablist">
+            <button class="tab-btn active" data-tab="agenda" role="tab" aria-selected="true" aria-controls="viewAgenda">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6"/>
+                    <line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/>
+                    <line x1="3" y1="6" x2="3.01" y2="6"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12"/>
+                    <line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+                <span>Agenda</span>
+            </button>
+            <button class="tab-btn" data-tab="month" role="tab" aria-selected="false" aria-controls="viewMonth">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Kalender</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content-scrollable">
+            <!-- TAB 1: Agenda Timeline -->
+            <div class="tab-view active" id="viewAgenda" role="tabpanel">
+                <div class="events-timeline" id="eventsTimeline">
+                    <div class="skeleton-timeline" aria-busy="true" aria-label="Memuat jadwal...">
+                        <div class="skeleton-date-header">
+                            <div class="skeleton-pill" style="width: 70px;"></div>
+                            <div class="skeleton-pill" style="width: 22px;"></div>
+                        </div>
+                        <div class="skeleton-event-card">
+                            <div class="skeleton-strip"></div>
+                            <div class="skeleton-body">
+                                <div class="skeleton-line" style="width: 65%; margin-bottom: 8px;"></div>
+                                <div class="skeleton-line" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-event-card">
+                            <div class="skeleton-strip"></div>
+                            <div class="skeleton-body">
+                                <div class="skeleton-line" style="width: 80%; margin-bottom: 8px;"></div>
+                                <div class="skeleton-line" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-date-header" style="margin-top: 14px;">
+                            <div class="skeleton-pill" style="width: 85px;"></div>
+                            <div class="skeleton-pill" style="width: 22px;"></div>
+                        </div>
+                        <div class="skeleton-event-card">
+                            <div class="skeleton-strip"></div>
+                            <div class="skeleton-body">
+                                <div class="skeleton-line" style="width: 70%; margin-bottom: 8px;"></div>
+                                <div class="skeleton-line" style="width: 35%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Mini Month Calendar -->
+            <div class="tab-view" id="viewMonth" role="tabpanel">
+                <div class="mini-calendar">
+                    <div class="calendar-nav">
+                        <button class="cal-nav-btn" id="prevMonth" aria-label="Bulan Sebelumnya">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <h3 class="cal-month-title" id="monthYearLabel">Maret 2026</h3>
+                        <button class="cal-nav-btn" id="nextMonth" aria-label="Bulan Berikutnya">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                    <div class="cal-weekdays">
+                        <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                    </div>
+                    <div class="cal-days-grid" id="calendarDaysGrid"></div>
+                    <div class="selected-day-events" id="selectedDayEvents">
+                        <h4 class="selected-date-title" id="selectedDateTitle">Jadwal Tanggal Ini</h4>
+                        <div class="day-events-list" id="dayEventsList"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Quick Add Event Modal -->
+        <div class="modal-backdrop" id="addEventModal" role="dialog" aria-modal="true" aria-labelledby="addEventModalTitle">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="modal-header-left">
+                        <span class="modal-eyebrow">AGENDA BARU</span>
+                        <h3 id="addEventModalTitle">Tambah Acara</h3>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseModal" aria-label="Tutup Modal">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <form id="formAddEvent">
+                    <div class="form-group">
+                        <label for="selectTargetCalendar">Simpan ke Kalender</label>
+                        <select id="selectTargetCalendar" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEventTitle">Judul Acara</label>
+                        <input type="text" id="inputEventTitle" placeholder="Contoh: Diskusi Roadmap Produk" required>
+                    </div>
+                    <div class="form-group form-checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="checkboxAllDay">
+                            <span>Acara Seharian (All Day)</span>
+                        </label>
+                    </div>
+                    <div class="form-row" id="timeInputsRow">
+                        <div class="form-group">
+                            <label for="inputEventStart">Mulai</label>
+                            <input type="datetime-local" id="inputEventStart" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputEventEnd">Selesai</label>
+                            <input type="datetime-local" id="inputEventEnd" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEventLocation">Lokasi (Opsional)</label>
+                        <input type="text" id="inputEventLocation" placeholder="Contoh: Gedung Lab B-204 / Google Meet">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEventDescription">Deskripsi / Catatan (Opsional)</label>
+                        <textarea id="inputEventDescription" rows="2" placeholder="Catatan agenda atau tugas..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="btnCancelModal">Batal</button>
+                        <button type="submit" class="btn-submit" id="btnSubmitEvent">
+                            <span>Simpan ke Google</span>
+                            <span class="btn-icon-circle">↗</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- In-App Event Details Modal -->
+        <div class="modal-backdrop" id="eventDetailsModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+            <div class="modal-card event-details-card">
+                <div class="details-top-bar">
+                    <div class="details-cal-badge-wrap">
+                        <span class="details-cal-badge" id="detailCalBadge">Kalender</span>
+                        <button type="button" class="btn-copy-chip" id="btnCopyCalLink" style="display: none;" title="Salin URL Kalender Asli" aria-label="Salin URL Kalender">
+                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Salin Link</span>
+                        </button>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseDetailModal" aria-label="Tutup Modal Detail">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="details-body">
+                    <h2 class="details-title" id="detailTitle">Judul Acara</h2>
+                    
+                    <div class="details-row details-time-row">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <div class="details-time-text">
+                            <span id="detailTime">Senin, 24 Agustus • 08:00 - 10:00</span>
+                            <span class="details-countdown-badge" id="detailCountdown">2 jam lagi</span>
+                        </div>
+                    </div>
+
+                    <div class="details-meet-container" id="detailMeetContainer" style="display: none;">
+                        <button type="button" class="btn-join-meet" id="btnDetailJoinMeet">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="23 7 16 12 23 17 23 7"/>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                            </svg>
+                            <span>Gabung Google Meet</span>
+                            <span class="btn-icon-circle">↗</span>
+                        </button>
+                    </div>
+
+                    <div class="details-row" id="detailLocationRow" style="display: none;">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <div class="details-loc-text">
+                            <span id="detailLocation">Ruang Lab B-204</span>
+                            <button type="button" class="btn-copy-chip" id="btnCopyLocation" title="Salin Lokasi" aria-label="Salin Lokasi">
+                                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                <span>Salin</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="details-row" id="detailRemindersRow" style="display: none;">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span id="detailReminders">15 menit sebelumnya</span>
+                    </div>
+
+                    <div class="details-section" id="detailDescSection" style="display: none;">
+                        <div class="details-section-label">Deskripsi / Catatan</div>
+                        <div class="details-desc-content" id="detailDescription"></div>
+                    </div>
+
+                    <div class="details-section" id="detailAttendeesSection" style="display: none;">
+                        <div class="details-section-label" id="detailAttendeesLabel">Peserta (0)</div>
+                        <div class="details-attendees-list" id="detailAttendeesList"></div>
+                    </div>
+
+                    <div class="details-creator-card" id="detailCreatorRow" style="display: none;">
+                        <div class="creator-card-left">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <div class="creator-info">
+                                <span class="creator-label">Penyelenggara / Pembuat</span>
+                                <span class="creator-value" id="detailCreator">user@domain.com</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-copy-chip" id="btnCopyCreator" title="Salin Info Pembuat" aria-label="Salin Pembuat">
+                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Salin</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-actions details-actions">
+                    <button type="button" class="btn-danger-outline" id="btnDetailDelete" title="Hapus Acara" aria-label="Hapus Acara">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        <span>Hapus</span>
+                    </button>
+                    <button type="button" class="btn-secondary" id="btnDetailOpenWeb" title="Buka di Google Calendar Web" aria-label="Buka di Web">
+                        <span>Buka di Web</span>
+                        <span class="btn-icon-circle">↗</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Filter Checklist Modal -->
+        <div class="modal-backdrop" id="calendarFilterModal" role="dialog" aria-modal="true" aria-labelledby="filterModalTitle">
+            <div class="modal-card filter-modal-card">
+                <div class="modal-header">
+                    <div class="filter-header-left">
+                        <span class="modal-eyebrow">PENGATURAN</span>
+                        <h3 id="filterModalTitle">Pilih Kalender</h3>
+                        <span class="filter-subtitle">Pilih kalender yang ingin ditampilkan di widget</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseFilterModal" aria-label="Tutup Filter">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="filter-quick-actions">
+                    <button type="button" class="filter-quick-btn" id="btnSelectAllCalendars">Pilih Semua</button>
+                    <span class="quick-sep" aria-hidden="true">•</span>
+                    <button type="button" class="filter-quick-btn" id="btnDeselectAllCalendars">Kosongkan</button>
+                </div>
+                <div class="calendar-checklist-container" id="calendarChecklistContainer">
+                    <div class="filter-loading">Memuat kalender...</div>
+                </div>
+                <div class="filter-settings-row">
+                    <label class="checkbox-label startup-label">
+                        <input type="checkbox" id="checkboxAutoLaunch">
+                        <span>Jalankan otomatis saat Windows dinyalakan</span>
+                    </label>
+                </div>
+                <div class="filter-diagnostics-row">
+                    <div class="diagnostics-info">
+                        <span class="diagnostics-label">Diagnostik Sistem</span>
+                        <span class="diagnostics-desc">File log aktivitas & crash dump</span>
+                    </div>
+                    <button type="button" class="btn-logs-link" id="btnOpenLogsFolder" title="Buka folder log di Windows Explorer">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span>Buka Folder Log</span>
+                    </button>
+                </div>
+                <div class="filter-account-row">
+                    <div class="account-info">
+                        <span class="account-label">Akun Google</span>
+                        <span class="account-desc">Terhubung dengan Google Calendar</span>
+                    </div>
+                    <button type="button" class="btn-logout-link" id="btnLogoutGoogleAccount" title="Putuskan koneksi akun Google">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Putuskan Akun</span>
+                    </button>
+                </div>
+                <div class="modal-actions filter-actions">
+                    <button type="button" class="btn-submit" id="btnApplyCalendarFilter">
+                        <span>Terapkan Pengaturan</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom In-App Delete Confirmation Modal -->
+        <div class="modal-backdrop" id="confirmDeleteModal" role="dialog" aria-modal="true" aria-labelledby="confirmDeleteTitle">
+            <div class="modal-card confirm-delete-card">
+                <div class="confirm-icon-wrap">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <h3 id="confirmDeleteTitle" class="confirm-title">Hapus Acara?</h3>
+                <p id="confirmDeleteMsg" class="confirm-desc">Apakah Anda yakin ingin menghapus acara ini dari Google Calendar?</p>
+                <div class="modal-actions confirm-actions">
+                    <button type="button" class="btn-cancel" id="btnCancelDelete">Batal</button>
+                    <button type="button" class="btn-danger-filled" id="btnConfirmDelete">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth / Login Overlay -->
+        <div class="auth-overlay" id="authOverlay">
+            <div class="auth-card">
+                <div class="auth-logo-glow">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                </div>
+                <h2>Google Calendar Widget</h2>
+                <p>Hubungkan akun Google kamu untuk menampilkan agenda dan jadwal kegiatan harian langsung di desktop.</p>
+                <button class="btn-google-login" id="btnLoginGoogle" aria-label="Masuk dengan Akun Google">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Masuk dengan Google</span>
+                    <span class="btn-icon-circle">↗</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- In-App Floating Toast Container -->
+        <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+        <!-- 8-Directional Window Resize Handles -->
+        <div class="resize-handle resize-top" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-bottom" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-left" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-right" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-top-left" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-top-right" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-bottom-left" title="Tarik untuk mengubah ukuran"></div>
+        <div class="resize-handle resize-bottom-right" title="Tarik untuk mengubah ukuran">
+            <svg viewBox="0 0 10 10" width="8" height="8" fill="currentColor">
+                <circle cx="8" cy="8" r="1.1"/>
+                <circle cx="8" cy="4" r="1.1"/>
+                <circle cx="4" cy="8" r="1.1"/>
+            </svg>
+        </div>
+    </div>
+
+    <script src="widget.js"></script>
+</body>
+</html>
