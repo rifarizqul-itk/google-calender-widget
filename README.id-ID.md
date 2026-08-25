@@ -6,9 +6,11 @@
 Widget kalender desktop bernuansa *ambient* modern untuk Windows, macOS, dan Linux berbasis Electron. Terhubung langsung dengan Google Calendar API v3 untuk menampilkan agenda harian lengkap dengan hitung mundur waktu nyata, tampilan ganda, sinkronisasi otomatis di latar belakang, dan penyimpanan cache offline.
 
 [![GitHub Release](https://img.shields.io/github/v/release/rifarizqul-itk/google-calender-widget?style=flat-square)](https://github.com/rifarizqul-itk/google-calender-widget/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square)](#tumpukan-teknologi-tech-stack)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square)](https://nodejs.org)
-[![Electron Version](https://img.shields.io/badge/electron-38.x-blue?style=flat-square)](https://www.electronjs.org/)
+[![Electron Version](https://img.shields.io/badge/electron-38.x-94a3b8?style=flat-square)](https://www.electronjs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 ---
 
