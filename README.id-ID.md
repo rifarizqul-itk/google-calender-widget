@@ -210,8 +210,8 @@ npm run dist:win
 ```
 
 Hasil kompilasi akan tersimpan di dalam folder `dist/`:
-- `google-calender-widget Setup 1.5.5.exe` (Installer NSIS)
-- `google-calender-widget 1.5.5.exe` (Executable Portabel)
+- `google-calender-widget Setup 2.0.0.exe` (Installer NSIS)
+- `google-calender-widget 2.0.0.exe` (Executable Portabel)
 
 ---
 

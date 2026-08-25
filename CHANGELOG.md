@@ -7,25 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.5.5] - 2026-08-26
+## [2.0.0] - 2026-08-26
 
-### Added
-- **Internationalization (i18n) Engine**: Added seamless multilingual support with real-time switching between English (`EN`) and Bahasa Indonesia (`ID`) via the header toggle or Settings modal, with persistent user preferences.
-- **Account Disconnect (Logout)**: Added an explicit account disconnection action in the Calendar Settings modal with an in-app confirmation dialog, clearing OAuth tokens and local cache files.
-- **Dynamic Domain Parsing**: Automatic hostname extraction for long calendar names and creator/organizer URLs, paired with clipboard copy action buttons.
-- **Exclusive All-Day Event Handling**: Corrected all-day event creation logic to use exclusive end dates (`+1 day`) matching the Google Calendar API v3 specification.
-- **OAuth Server Timeout**: Added a 5-minute safety timeout and automatic socket cleanup to the local loopback server during authentication.
-- **System Tray Window Sync**: Dynamic window instance tracking to prevent stale references when restoring minimized or hidden instances.
-
-### Changed
-- **Header Aesthetics**: Removed redundant version tags for a cleaner minimalist header.
-- **Motion & Performance**: Replaced CPU-heavy CSS background-position animations with GPU compositor-accelerated layer transforms (`translate3d`).
-- **Scroll Containment**: Resolved input autofocus shifts during modal transitions on frameless transparent windows.
-- **Dark & Light Contrast**: Applied ITU-R BT.709 relative luminance color correction to ensure Google Calendar badges maintain readable contrast across both themes.
-
-### Fixed
-- Fixed an unhandled `ReferenceError` on fallback token paths when `app.getPath('userData')` is inaccessible.
-- Fixed an issue where all-day events created in the quick add modal could be saved with zero duration.
+### Major Architectural Overhaul & First Official Next-Gen Release
+- **Native Google Calendar API v3 Integration**: Completely replaced legacy webview wrappers with direct REST API integration, atomic event creation, and in-app event deletion.
+- **Pure Bring Your Own Key (BYOK) Architecture**: Private, zero-telemetry credential model where users supply their own Google Cloud OAuth 2.0 Client ID without reliance on third-party backend servers.
+- **Modern Ambient Glassmorphism Design System**: Complete visual overhaul featuring ambient slate dark theme, light mode support, hairline vector icons, and ITU-R BT.709 contrast compensation.
+- **Bilingual Engine (English & Bahasa Indonesia)**: Instant language switching with persistent user preferences, full date/time localization, and bilingual documentation.
+- **Offline First & Background Sync**: Local caching with automatic exponential backoff, zero CPU idle ticker, and offline recovery.
+- **Smart Window Management**: 8-directional window resizing, screen constraint clamping, state keeper persistence, and Windows system tray integration.
+- **Security Hardening**: Strict Electron process isolation (`contextIsolation: true`, `nodeIntegration: false`), comprehensive HTML description sanitization, and dual-port OAuth loopback server (54321 + ephemeral fallback).
 
 ---
 

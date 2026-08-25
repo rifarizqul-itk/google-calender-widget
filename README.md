@@ -241,8 +241,8 @@ npm run dist:win
 ```
 
 Build outputs are saved to the `dist/` directory:
-- `google-calender-widget Setup 1.5.5.exe` (NSIS Installer)
-- `google-calender-widget 1.5.5.exe` (Portable Executable)
+- `google-calender-widget Setup 2.0.0.exe` (NSIS Installer)
+- `google-calender-widget 2.0.0.exe` (Portable Executable)
 
 ---
 
