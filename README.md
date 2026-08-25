@@ -1,5 +1,5 @@
 **Read this in other languages:**
-[English](README.md) | [Indonesian](README.id-ID.md) |
+[English](README.md) | [Indonesian](README.id-ID.md)
 
 # Google Calendar Desktop Widget
 
@@ -248,13 +248,13 @@ Build outputs are saved to the `dist/` directory:
 
 ## Troubleshooting
 
-### "File client_secret.json tidak ditemukan / not found"
+### "File client_secret.json not found"
 Ensure your OAuth credentials file from Google Cloud Console is placed in `%APPDATA%\google-calender-widget\` or the project root directory, and named `client_secret.json`.
 
 ### Window position appears off-screen after display changes
 Right-click the system tray icon and select **Reset Window Size (360x580)** to restore the widget to the center of your active screen.
 
-### "Error: Waktu otorisasi Google login habis"
+### "Error: Google OAuth authorization timed out"
 The OAuth login server includes a 5-minute timeout for security. If the login process in your browser takes longer than 5 minutes, click **Sign in with Google** again in the widget.
 
 ### Viewing Application Logs

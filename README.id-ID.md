@@ -1,5 +1,5 @@
 **Baca ini dalam bahasa lain:**
-[English](README.md) | [Indonesian](README.id-ID.md) |
+[English](README.md) | [Indonesian](README.id-ID.md)
 
 # Google Calendar Desktop Widget
 
