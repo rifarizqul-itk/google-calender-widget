@@ -429,7 +429,19 @@
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                         </svg>
-                        <span>Buka Folder Log</span>
+                        <span id="lblOpenLogsBtn">Buka Folder Log</span>
+                    </button>
+                </div>
+                <div class="filter-diagnostics-row filter-creds-row">
+                    <div class="diagnostics-info">
+                        <span class="diagnostics-label" id="lblCreds">Kredensial OAuth (BYOK)</span>
+                        <span class="diagnostics-desc" id="descCreds">Lokasi file client_secret.json</span>
+                    </div>
+                    <button type="button" class="btn-logs-link" id="btnOpenCredsFolder" title="Buka folder kredensial di Windows Explorer">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span id="lblOpenCredsBtn">Folder Kredensial</span>
                     </button>
                 </div>
                 <div class="filter-account-row">
@@ -485,7 +497,15 @@
                     </svg>
                 </div>
                 <h2>Google Calendar Widget</h2>
-                <p>Hubungkan akun Google kamu untuk menampilkan agenda dan jadwal kegiatan harian langsung di desktop.</p>
+                <p id="lblAuthDesc">Hubungkan akun Google kamu untuk menampilkan agenda dan jadwal kegiatan harian langsung di desktop.</p>
+                
+                <div class="auth-creds-hint hidden" id="authCredsHint">
+                    <div class="auth-hint-icon">ℹ️</div>
+                    <div class="auth-hint-text" id="authHintText">
+                        File <code>client_secret.json</code> belum terdeteksi. Silakan unduh OAuth Client ID dari Google Cloud Console dan masukkan ke folder aplikasi.
+                    </div>
+                </div>
+
                 <button class="btn-google-login" id="btnLoginGoogle" aria-label="Masuk dengan Akun Google">
                     <svg viewBox="0 0 24 24" width="18" height="18">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -493,9 +513,27 @@
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                     </svg>
-                    <span>Masuk dengan Google</span>
+                    <span id="lblBtnLoginGoogle">Masuk dengan Google</span>
                     <span class="btn-icon-circle">↗</span>
                 </button>
+
+                <div class="auth-byok-links">
+                    <button type="button" class="btn-byok-link" id="btnOpenByokGuide">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <span id="lblByokGuide">Panduan Setup Google Cloud (BYOK)</span>
+                        <span style="font-size: 10px; opacity: 0.7;">↗</span>
+                    </button>
+                    <button type="button" class="btn-byok-link" id="btnOpenAuthCredsFolder">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span id="lblOpenCredsAuthBtn">Buka Folder Kredensial</span>
+                    </button>
+                </div>
             </div>
         </div>
 

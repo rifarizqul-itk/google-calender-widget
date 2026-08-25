@@ -47,11 +47,56 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 - **Node.js**: Version 20.0.0 or higher
 - **npm** or **yarn**
-- **Google Cloud Console Project**: A project with the Google Calendar API enabled and an OAuth 2.0 Client ID configured (Desktop application type).
+- **Google Account & Google Cloud Project**: Used to generate your own `client_secret.json` credential (BYOK - Bring Your Own Key mode).
 
 ---
 
-## Getting Started
+## Panduan Setup Google Cloud Console (BYOK Mode)
+
+Widget ini menggunakan arsitektur **Bring Your Own Key (BYOK)** demi privasi dan keamanan maksimal. Anda memiliki kendali penuh atas kredensial Google API Anda sendiri tanpa perantara server pihak ketiga.
+
+Ikuti langkah-langkah berikut untuk membuat `client_secret.json` secara gratis di Google Cloud Console:
+
+### 1. Buat Project Baru
+1. Buka [Google Cloud Console](https://console.cloud.google.com/).
+2. Pada header atas, klik dropdown project dan pilih **New Project**.
+3. Beri nama project (misal: `My Calendar Widget`), lalu klik **Create**.
+
+### 2. Aktifkan Google Calendar API
+1. Buka menu navigasi kiri: **APIs & Services > Library**.
+2. Ketik `Google Calendar API` di kolom pencarian.
+3. Klik **Google Calendar API** lalu klik tombol **Enable**.
+
+### 3. Konfigurasi OAuth Consent Screen
+1. Buka menu **APIs & Services > OAuth consent screen**.
+2. Pilih User Type: **External**, lalu klik **Create**.
+3. Isi informasi aplikasi:
+   - **App name**: `Google Calendar Desktop Widget`
+   - **User support email**: Pilih email Google Anda.
+   - **Developer contact information**: Masukkan email Anda.
+4. Klik **Save and Continue** pada halaman Scopes.
+5. Pada halaman **Test Users**, klik **+ ADD USERS**, lalu masukkan alamat email Google yang akan Anda gunakan untuk login di widget.
+6. Klik **Save and Continue** hingga selesai (*Back to Dashboard*).
+
+### 4. Buat OAuth Client ID (Desktop App)
+1. Buka menu **APIs & Services > Credentials**.
+2. Klik tombol **+ CREATE CREDENTIALS** di bagian atas, pilih **OAuth client ID**.
+3. Pada dropdown **Application type**, pilih **Desktop app**.
+4. Beri nama (misal: `Calendar Desktop Client`), lalu klik **Create**.
+5. Jendela konfirmasi akan muncul. Klik **DOWNLOAD JSON** untuk mengunduh file kredensial.
+
+### 5. Pasang `client_secret.json` ke Widget
+1. Ubah nama file JSON yang baru Anda unduh menjadi **`client_secret.json`**.
+2. Pindahkan file tersebut ke lokasi berikut:
+   - **Pengguna Installer Windows**: Tekan `Win + R`, ketik `%APPDATA%\google-calender-widget`, lalu paste file `client_secret.json` di folder tersebut (atau klik tombol **Buka Folder Kredensial** di layar widget).
+   - **Pengembang / Git Clone**: Letakkan file `client_secret.json` langsung di root folder project `google-calender-widget/`.
+
+### 6. Masuk & Hubungkan Kalender
+Buka aplikasi widget, klik **Masuk dengan Google**, dan berikan izin di browser Anda. Agenda Anda akan langsung tersinkronisasi di desktop!
+
+---
+
+## Getting Started (Development)
 
 ### 1. Clone the Repository
 
@@ -66,17 +111,13 @@ cd google-calender-widget
 npm install
 ```
 
-### 3. Configure Google OAuth Credentials
+### 3. Place Credentials
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a project and enable the **Google Calendar API**.
-3. Under **APIs & Services > Credentials**, create an **OAuth 2.0 Client ID** with application type set to **Desktop App**.
-4. Download the client secret JSON file.
-5. Place the file in the root directory of the project named `client_secret.json` (or matching `client_secret*.json`).
+Pastikan file `client_secret.json` hasil langkah setup di atas telah diletakkan di root folder project.
 
-> The `.gitignore` file is configured to exclude `client_secret*.json` and `google_tokens.json` to prevent accidental credential commits.
+> File `.gitignore` sudah otomatis mengecualikan `client_secret*.json` dan `google_tokens.json` agar kredensial Anda tidak akan pernah ter-commit ke git.
 
-### 4. Run the Development Server
+### 4. Run the Widget
 
 ```bash
 npm start

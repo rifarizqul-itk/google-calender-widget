@@ -16,6 +16,11 @@
     // DOM Elements
     const authOverlay = document.getElementById('authOverlay');
     const btnLoginGoogle = document.getElementById('btnLoginGoogle');
+    const authCredsHint = document.getElementById('authCredsHint');
+    const authHintText = document.getElementById('authHintText');
+    const btnOpenByokGuide = document.getElementById('btnOpenByokGuide');
+    const btnOpenAuthCredsFolder = document.getElementById('btnOpenAuthCredsFolder');
+    const btnOpenCredsFolder = document.getElementById('btnOpenCredsFolder');
     const currentDateNumber = document.getElementById('currentDateNumber');
     const syncStatus = document.getElementById('syncStatus');
     const statusDot = syncStatus.querySelector('.status-dot');
@@ -212,6 +217,9 @@
             lblDiagnostics: 'Diagnostik Sistem',
             descDiagnostics: 'File log aktivitas & crash dump',
             btnOpenLogs: 'Buka Folder Log',
+            lblCreds: 'Kredensial OAuth (BYOK)',
+            descCreds: 'Lokasi file client_secret.json',
+            btnOpenCreds: 'Folder Kredensial',
             lblAccount: 'Akun Google',
             descAccount: 'Terhubung dengan Google Calendar',
             btnLogout: 'Putuskan Akun',
@@ -234,6 +242,9 @@
             authOpeningBrowser: 'Membuka Browser...',
             authSuccess: 'Berhasil login dengan akun Google!',
             authFailed: (err) => `Login gagal: ${err}`,
+            authByokGuide: 'Panduan Setup Google Cloud (BYOK)',
+            authOpenCredsFolder: 'Buka Folder Kredensial',
+            authCredsMissingHint: 'File <code>client_secret.json</code> belum terdeteksi. Silakan unduh OAuth Client ID dari Google Cloud Console dan masukkan ke folder aplikasi.',
             toastAccountDisconnected: 'Akun Google berhasil diputuskan',
             toastDisconnectFailed: (err) => `Gagal memutuskan akun: ${err}`,
             toastThemeSwitched: (t) => `Mode ${t === 'light' ? 'Terang' : 'Gelap'} diaktifkan`,
@@ -345,6 +356,9 @@
             lblDiagnostics: 'System Diagnostics',
             descDiagnostics: 'Activity log files & crash reports',
             btnOpenLogs: 'Open Logs Folder',
+            lblCreds: 'OAuth Credentials (BYOK)',
+            descCreds: 'Folder for client_secret.json',
+            btnOpenCreds: 'Credentials Folder',
             lblAccount: 'Google Account',
             descAccount: 'Connected to Google Calendar',
             btnLogout: 'Disconnect Account',
@@ -367,6 +381,9 @@
             authOpeningBrowser: 'Opening Browser...',
             authSuccess: 'Successfully signed in with Google!',
             authFailed: (err) => `Login failed: ${err}`,
+            authByokGuide: 'Google Cloud Setup Guide (BYOK)',
+            authOpenCredsFolder: 'Open Credentials Folder',
+            authCredsMissingHint: 'File <code>client_secret.json</code> not found. Please download OAuth Client ID from Google Cloud Console and place it in the app folder.',
             toastAccountDisconnected: 'Google account disconnected successfully',
             toastDisconnectFailed: (err) => `Failed to disconnect account: ${err}`,
             toastThemeSwitched: (t) => `${t === 'light' ? 'Light' : 'Dark'} mode activated`,
@@ -498,6 +515,13 @@
             if (span) span.textContent = t('btnOpenLogs');
         }
 
+        const lblCreds = document.getElementById('lblCreds');
+        if (lblCreds) lblCreds.textContent = t('lblCreds');
+        const descCreds = document.getElementById('descCreds');
+        if (descCreds) descCreds.textContent = t('descCreds');
+        const lblOpenCredsBtn = document.getElementById('lblOpenCredsBtn');
+        if (lblOpenCredsBtn) lblOpenCredsBtn.textContent = t('btnOpenCreds');
+
         const accountLabel = calendarFilterModal ? calendarFilterModal.querySelector('.account-label') : null;
         if (accountLabel) accountLabel.textContent = t('lblAccount');
         const accountDesc = calendarFilterModal ? calendarFilterModal.querySelector('.account-desc') : null;
@@ -537,12 +561,15 @@
 
         // Update Auth Overlay
         if (authOverlay) {
-            const p = authOverlay.querySelector('p');
+            const p = document.getElementById('lblAuthDesc');
             if (p) p.textContent = t('authDesc');
-            if (btnLoginGoogle) {
-                const span = btnLoginGoogle.querySelector('span');
-                if (span) span.textContent = t('authBtn');
-            }
+            const lblBtnLogin = document.getElementById('lblBtnLoginGoogle');
+            if (lblBtnLogin) lblBtnLogin.textContent = t('authBtn');
+            const lblByokGuide = document.getElementById('lblByokGuide');
+            if (lblByokGuide) lblByokGuide.textContent = t('authByokGuide');
+            const lblOpenCredsAuthBtn = document.getElementById('lblOpenCredsAuthBtn');
+            if (lblOpenCredsAuthBtn) lblOpenCredsAuthBtn.textContent = t('authOpenCredsFolder');
+            if (authHintText) authHintText.innerHTML = t('authCredsMissingHint');
         }
     }
 
@@ -863,6 +890,30 @@
             `;
         }
     });
+
+    if (btnOpenCredsFolder) {
+        btnOpenCredsFolder.addEventListener('click', () => {
+            if (window.calendarWidgetAPI) {
+                window.calendarWidgetAPI.system.openCredentialsFolder();
+            }
+        });
+    }
+
+    if (btnOpenAuthCredsFolder) {
+        btnOpenAuthCredsFolder.addEventListener('click', () => {
+            if (window.calendarWidgetAPI) {
+                window.calendarWidgetAPI.system.openCredentialsFolder();
+            }
+        });
+    }
+
+    if (btnOpenByokGuide) {
+        btnOpenByokGuide.addEventListener('click', () => {
+            if (window.calendarWidgetAPI) {
+                window.calendarWidgetAPI.system.openExternal('https://github.com/rifarizqul-itk/google-calender-widget#panduan-setup-google-cloud-console-byok-mode');
+            }
+        });
+    }
 
     // Helper: Relative Day Format
     function getRelativeDayLabel(date) {
@@ -2025,6 +2076,9 @@
             const authStatus = await window.calendarWidgetAPI.auth.checkStatus();
             if (!authStatus.authenticated) {
                 authOverlay.classList.remove('hidden');
+                if (authCredsHint) {
+                    authCredsHint.classList.toggle('hidden', Boolean(authStatus.hasCredentials));
+                }
             } else {
                 authOverlay.classList.add('hidden');
                 await refreshEvents();

@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('calendarWidgetAPI', {
     system: {
         openExternal: (url) => ipcRenderer.send('system:open-external', url),
         openLogs: () => ipcRenderer.send('system:open-logs'),
+        openCredentialsFolder: () => ipcRenderer.send('system:open-credentials-folder'),
         getAutoLaunch: () => ipcRenderer.invoke('system:get-auto-launch'),
         setAutoLaunch: (enable) => ipcRenderer.invoke('system:set-auto-launch', enable)
     },

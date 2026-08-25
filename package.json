@@ -43,13 +43,6 @@
       {
         "from": "./resources/",
         "to": "./"
-      },
-      {
-        "from": "./",
-        "to": "./",
-        "filter": [
-          "client_secret*.json"
-        ]
       }
     ],
     "win": {

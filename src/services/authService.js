@@ -65,8 +65,10 @@ class AuthService {
     }
 
     loadCredentials() {
+        this.initPaths();
         if (!this.credentialsPath || !existsSync(this.credentialsPath)) {
-            throw new Error('File client_secret.json tidak ditemukan di root folder project.');
+            const targetDir = this.getCredentialsDirectory();
+            throw new Error(`File client_secret.json belum ditemukan. Silakan letakkan file OAuth Client ID dari Google Cloud Console ke folder: ${targetDir}`);
         }
 
         const raw = readFileSync(this.credentialsPath, 'utf8');
@@ -74,10 +76,23 @@ class AuthService {
         const creds = parsed.installed || parsed.web;
 
         if (!creds || !creds.client_id || !creds.client_secret) {
-            throw new Error('Format client_secret.json tidak valid.');
+            throw new Error('Format client_secret.json tidak valid (wajib memiliki client_id dan client_secret).');
         }
 
         return creds;
+    }
+
+    hasCredentials() {
+        this.initPaths();
+        return Boolean(this.credentialsPath && existsSync(this.credentialsPath));
+    }
+
+    getCredentialsDirectory() {
+        try {
+            const userData = app ? app.getPath('userData') : null;
+            if (userData) return userData;
+        } catch {}
+        return process.cwd();
     }
 
     initOAuthClient() {

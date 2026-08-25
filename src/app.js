@@ -71,7 +71,10 @@ function registerIpcHandlers() {
     });
     // Auth Handlers
     ipcMain.handle('auth:status', () => {
-        return { authenticated: authService.isAuthenticated() };
+        return {
+            authenticated: authService.isAuthenticated(),
+            hasCredentials: authService.hasCredentials()
+        };
     });
 
     ipcMain.handle('auth:login', async () => {
@@ -94,6 +97,11 @@ function registerIpcHandlers() {
     // Logging & Diagnostics
     ipcMain.on('system:open-logs', () => {
         logger.openLogsFolder();
+    });
+
+    ipcMain.on('system:open-credentials-folder', () => {
+        const dir = authService.getCredentialsDirectory();
+        shell.openPath(dir);
     });
 
     ipcMain.on('logger:log', (_event, { level, context, message, meta }) => {
