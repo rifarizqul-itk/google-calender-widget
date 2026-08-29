@@ -428,6 +428,13 @@ html, body {
     gap: 5px;
     flex-shrink: 0;
     box-shadow: 0 2px 6px rgba(var(--color-accent-rgb), 0.35);
+    transition: background var(--dur-normal) var(--ease-smooth),
+                box-shadow var(--dur-normal) var(--ease-smooth);
+}
+
+.banner-badge.ongoing {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.45);
 }
 
 .pulse-ring {
@@ -1385,6 +1392,7 @@ html, body {
 .form-group select,
 .form-group textarea {
     width: 100%;
+    max-width: 100%;
     background: var(--color-bg-surface);
     border: 1px solid var(--border-hairline);
     border-radius: var(--radius-sm);
@@ -1393,10 +1401,60 @@ html, body {
     font-size: 12px;
     padding: 8px 10px;
     outline: none;
+    box-sizing: border-box;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
     transition: border-color var(--dur-fast) var(--ease-smooth),
                 box-shadow var(--dur-fast) var(--ease-smooth),
                 background var(--dur-fast) var(--ease-smooth);
+}
+
+.form-group select {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.form-group select option {
+    background: #10141d;
+    color: #f0f3f8;
+    max-width: 100%;
+    padding: 6px 8px;
+}
+
+[data-theme="light"] .form-group select option {
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.form-group textarea {
+    min-height: 84px;
+    max-height: 180px;
+    line-height: 1.5;
+    font-size: 11.5px;
+    resize: vertical;
+    overflow-y: auto;
+}
+
+.form-group textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+.form-group textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.form-group textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-pill);
+}
+
+.form-group textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] .form-group textarea::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
 }
 
 [data-theme="light"] .form-group input,
@@ -1857,9 +1915,155 @@ html, body {
     text-overflow: ellipsis;
 }
 
+/* Rich Event Type & Availability Tag Chips */
+.details-tag-chip {
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-surface-active);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--border-hairline);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.details-tag-chip svg {
+    flex-shrink: 0;
+}
+
+/* Drive Attachments Section */
+.details-attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.details-attachment-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: var(--radius-xs);
+    background: var(--color-bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+    color: var(--color-text-primary);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-smooth);
+}
+
+.details-attachment-chip:hover {
+    background: var(--color-accent-subtle);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateX(2px);
+}
+
+.details-attachment-chip svg {
+    flex-shrink: 0;
+    color: var(--color-accent);
+}
+
+.details-attachment-chip .att-arrow {
+    margin-left: auto;
+    font-size: 10px;
+    opacity: 0.6;
+}
+
+/* Metadata creation & update footer */
+.details-meta-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 9px;
+    color: var(--color-text-tertiary);
+    padding-top: 6px;
+    margin-top: 4px;
+    border-top: 1px dashed var(--border-hairline);
+}
+
+/* Timeline Mini Badges */
+.event-mini-badge {
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 1.5px 5px;
+    border-radius: 4px;
+    background: var(--color-bg-surface-active);
+    color: var(--color-text-tertiary);
+    border: 1px solid var(--border-hairline);
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 3.5px;
+    line-height: 1;
+}
+
+.event-mini-badge svg {
+    flex-shrink: 0;
+}
+
+.event-mini-badge.free-avail {
+    color: var(--color-success);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.rsvp-icon {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+}
+
+.rsvp-icon.rsvp-accepted {
+    color: var(--color-success);
+}
+
+.rsvp-icon.rsvp-tentative {
+    color: var(--color-warning);
+}
+
+.rsvp-icon.rsvp-declined {
+    color: var(--color-danger);
+}
+
+.rsvp-icon.rsvp-pending {
+    color: var(--color-text-tertiary);
+}
+
+.rsvp-icon.rsvp-organizer {
+    color: #eab308;
+}
+
 .details-actions {
     margin-top: 14px;
     flex-shrink: 0;
+}
+
+.btn-edit-outline {
+    background: transparent;
+    border: 1px solid rgba(var(--color-accent-rgb), 0.35);
+    color: var(--color-accent);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background var(--dur-fast) var(--ease-smooth),
+                transform var(--dur-fast) var(--ease-spring);
+}
+
+.btn-edit-outline:hover {
+    background: var(--color-accent-subtle);
+    border-color: var(--color-accent);
+    transform: translateY(-0.5px);
 }
 
 .btn-danger-outline {
@@ -1881,6 +2085,27 @@ html, body {
 .btn-danger-outline:hover {
     background: var(--color-danger-bg);
     transform: translateY(-0.5px);
+}
+
+.past-event-chip {
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 1.5px 5.5px;
+    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--color-text-tertiary);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.day-event-card.past-event {
+    opacity: 0.72;
+}
+
+.day-event-card.past-event:hover {
+    opacity: 1;
 }
 
 .btn-secondary {

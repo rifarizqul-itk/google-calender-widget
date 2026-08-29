@@ -140,7 +140,7 @@ class CalendarService {
     }
 
     async getUpcomingEvents(options = {}) {
-        const { maxResults = 100, daysAhead = 60 } = options;
+        const { maxResults = 250, daysAhead = 90, daysPast = 60 } = options;
 
         if (!authService.isAuthenticated()) {
             return {
@@ -156,8 +156,9 @@ class CalendarService {
             const calendar = getCalendarClient({ version: 'v3', auth });
 
             const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-            const timeMax = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000).toISOString();
+            const pastDate = new Date(now.getTime() - daysPast * 24 * 60 * 60 * 1000);
+            const timeMin = options.timeMin || new Date(pastDate.getFullYear(), pastDate.getMonth(), pastDate.getDate()).toISOString();
+            const timeMax = options.timeMax || new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000).toISOString();
 
             // 1. Fetch all user's calendars
             let allCalendars = [{ id: 'primary', summary: 'Primary', backgroundColor: '#38bdf8' }];
@@ -186,12 +187,27 @@ class CalendarService {
                 return savedSelectedIds.includes(cal.id);
             });
 
+            // Google Calendar official 11 event colors map
+            const GOOGLE_EVENT_COLORS = {
+                '1': '#7986cb',  // Lavender
+                '2': '#33b679',  // Sage
+                '3': '#8e24aa',  // Grape
+                '4': '#e67c73',  // Flamingo
+                '5': '#f6bf26',  // Banana
+                '6': '#f4511e',  // Tangerine
+                '7': '#039be5',  // Peacock
+                '8': '#616161',  // Graphite
+                '9': '#3f51b5',  // Blueberry
+                '10': '#0b8043', // Basil
+                '11': '#d50000'  // Tomato
+            };
+
             // 3. Fetch events from active/checked calendars in parallel
             const fetchPromises = activeCalendars.map(async (cal) => {
                 try {
                     const res = await calendar.events.list({
                         calendarId: cal.id,
-                        timeMin: startOfToday,
+                        timeMin,
                         timeMax,
                         maxResults,
                         singleEvents: true,
@@ -200,12 +216,34 @@ class CalendarService {
 
                     const items = res.data.items || [];
                     return items.map((item) => {
-                        // Extract video conference link if available
+                        // Extract video conference & entry points
                         let hangoutLink = item.hangoutLink || null;
-                        if (!hangoutLink && item.conferenceData && Array.isArray(item.conferenceData.entryPoints)) {
-                            const videoEntry = item.conferenceData.entryPoints.find(e => e.entryPointType === 'video');
-                            if (videoEntry) hangoutLink = videoEntry.uri;
+                        let conferenceDetails = null;
+
+                        if (item.conferenceData) {
+                            if (Array.isArray(item.conferenceData.entryPoints)) {
+                                const videoEntry = item.conferenceData.entryPoints.find(e => e.entryPointType === 'video');
+                                if (videoEntry && !hangoutLink) hangoutLink = videoEntry.uri;
+                            }
+                            conferenceDetails = {
+                                solutionName: item.conferenceData.conferenceSolution ? item.conferenceData.conferenceSolution.name : 'Google Meet',
+                                solutionIcon: item.conferenceData.conferenceSolution ? item.conferenceData.conferenceSolution.iconUri : null,
+                                entryPoints: (item.conferenceData.entryPoints || []).map(ep => ({
+                                    entryPointType: ep.entryPointType,
+                                    uri: ep.uri,
+                                    label: ep.label || null,
+                                    pin: ep.pin || null,
+                                    passcode: ep.passcode || null,
+                                    regionCode: ep.regionCode || null
+                                })),
+                                notes: item.conferenceData.notes || null
+                            };
                         }
+
+                        // Determine color (custom event color override takes priority over calendar color)
+                        const eventColor = (item.colorId && GOOGLE_EVENT_COLORS[item.colorId])
+                            ? GOOGLE_EVENT_COLORS[item.colorId]
+                            : (cal.backgroundColor || '#38bdf8');
 
                         return {
                             id: item.id,
@@ -220,26 +258,53 @@ class CalendarService {
                             calendarId: cal.id,
                             calendarName: cal.summary || 'Kalender',
                             calendarColor: cal.backgroundColor || '#38bdf8',
+                            eventColor: eventColor,
+                            colorId: item.colorId || null,
                             hangoutLink,
+                            conferenceDetails,
+                            eventType: item.eventType || 'default', // 'default', 'outOfOffice', 'focusTime', 'workingLocation', 'fromGmail', 'birthday'
+                            workingLocationProperties: item.workingLocationProperties || null,
+                            outOfOfficeProperties: item.outOfOfficeProperties || null,
+                            focusTimeProperties: item.focusTimeProperties || null,
+                            transparency: item.transparency || 'opaque', // 'opaque' (Busy) vs 'transparent' (Free)
+                            visibility: item.visibility || 'default',     // 'default', 'public', 'private', 'confidential'
+                            status: item.status || 'confirmed',          // 'confirmed', 'tentative', 'cancelled'
+                            created: item.created || null,
+                            updated: item.updated || null,
+                            iCalUID: item.iCalUID || null,
                             organizer: item.organizer ? { email: item.organizer.email, displayName: item.organizer.displayName || item.organizer.email } : null,
                             creator: item.creator ? { email: item.creator.email, displayName: item.creator.displayName || item.creator.email } : null,
                             attendees: (item.attendees || []).map(a => ({
                                 email: a.email,
                                 displayName: a.displayName || a.email,
-                                responseStatus: a.responseStatus,
+                                responseStatus: a.responseStatus || 'needsAction', // 'accepted', 'tentative', 'declined', 'needsAction'
                                 self: Boolean(a.self),
-                                organizer: Boolean(a.organizer)
+                                organizer: Boolean(a.organizer),
+                                optional: Boolean(a.optional),
+                                comment: a.comment || null,
+                                additionalGuests: a.additionalGuests || 0,
+                                resource: Boolean(a.resource)
                             })),
-                            status: item.status || 'confirmed',
                             reminders: item.reminders ? (
-                                item.reminders.useDefault ? ['Pengingat bawaan kalender'] :
-                                (item.reminders.overrides || []).map(r => `${r.minutes} menit sebelumnya`)
+                                item.reminders.useDefault ? ['Default'] :
+                                (item.reminders.overrides || []).map(r => `${r.minutes}m (${r.method || 'popup'})`)
                             ) : [],
+                            remindersData: item.reminders ? {
+                                useDefault: Boolean(item.reminders.useDefault),
+                                overrides: (item.reminders.overrides || []).map(r => ({
+                                    minutes: r.minutes,
+                                    method: r.method || 'popup'
+                                }))
+                            } : null,
                             recurring: Boolean(item.recurringEventId || item.recurrence),
+                            recurrence: item.recurrence || null,
+                            recurringEventId: item.recurringEventId || null,
                             attachments: (item.attachments || []).map(att => ({
                                 fileUrl: att.fileUrl,
-                                title: att.title || 'Lampiran',
-                                iconLink: att.iconLink || ''
+                                title: att.title || 'Lampiran Dokumen',
+                                iconLink: att.iconLink || '',
+                                mimeType: att.mimeType || '',
+                                fileId: att.fileId || ''
                             }))
                         };
                     });
@@ -332,6 +397,66 @@ class CalendarService {
         logger.info('CalendarService', `Created new event "${summary}" in calendar "${calendarId}".`);
 
         return res.data;
+    }
+
+    async updateEvent({
+        calendarId = 'primary',
+        eventId,
+        summary,
+        startDateTime,
+        endDateTime,
+        location,
+        description,
+        isAllDay = false,
+        transparency = 'opaque',
+        visibility = 'default',
+        colorId = null
+    }) {
+        if (!eventId || typeof eventId !== 'string') {
+            throw new Error('Valid Event ID is required for update');
+        }
+        const auth = await authService.getAuthenticatedClient();
+        const calendar = getCalendarClient({ version: 'v3', auth });
+
+        const requestBody = {};
+        if (summary !== undefined) requestBody.summary = String(summary);
+        if (location !== undefined) requestBody.location = String(location);
+        if (description !== undefined) requestBody.description = String(description);
+        if (transparency) requestBody.transparency = transparency;
+        if (visibility && visibility !== 'default') requestBody.visibility = visibility;
+        if (colorId) requestBody.colorId = String(colorId);
+
+        if (startDateTime && endDateTime) {
+            if (isAllDay) {
+                const startDateStr = startDateTime.split('T')[0];
+                const rawEndDateStr = endDateTime.split('T')[0];
+                const [y, m, d] = rawEndDateStr.split('-').map(Number);
+                const endObj = new Date(y, m - 1, d + 1);
+                const pad = n => String(n).padStart(2, '0');
+                const exclusiveEndDateStr = `${endObj.getFullYear()}-${pad(endObj.getMonth() + 1)}-${pad(endObj.getDate())}`;
+
+                requestBody.start = { date: startDateStr };
+                requestBody.end = { date: exclusiveEndDateStr };
+            } else {
+                requestBody.start = { dateTime: new Date(startDateTime).toISOString() };
+                requestBody.end = { dateTime: new Date(endDateTime).toISOString() };
+            }
+        }
+
+        const res = await calendar.events.patch({
+            calendarId: calendarId || 'primary',
+            eventId,
+            requestBody
+        });
+
+        const { logger } = require('../utils/logger');
+        logger.info('CalendarService', `Updated event "${eventId}" (${summary || ''}) in calendar "${calendarId}".`);
+
+        return res.data;
+    }
+
+    async getEventsForRange({ timeMin, timeMax, maxResults = 250 }) {
+        return this.getUpcomingEvents({ timeMin, timeMax, maxResults });
     }
 
     async deleteEvent({ calendarId = 'primary', eventId }) {

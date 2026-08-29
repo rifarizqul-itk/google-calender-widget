@@ -203,12 +203,12 @@
             </div>
         </main>
 
-        <!-- Quick Add Event Modal -->
+        <!-- Quick Add / Edit Event Modal -->
         <div class="modal-backdrop" id="addEventModal" role="dialog" aria-modal="true" aria-labelledby="addEventModalTitle">
             <div class="modal-card">
                 <div class="modal-header">
                     <div class="modal-header-left">
-                        <span class="modal-eyebrow">AGENDA BARU</span>
+                        <span class="modal-eyebrow" id="modalEventEyebrow">AGENDA BARU</span>
                         <h3 id="addEventModalTitle">Tambah Acara</h3>
                     </div>
                     <button class="modal-close-btn" id="btnCloseModal" aria-label="Tutup Modal">
@@ -219,42 +219,44 @@
                     </button>
                 </div>
                 <form id="formAddEvent">
-                    <div class="form-group">
-                        <label for="selectTargetCalendar">Simpan ke Kalender</label>
+                    <input type="hidden" id="inputEventId" value="">
+                    <input type="hidden" id="inputEventMode" value="create">
+                    <div class="form-group" id="groupTargetCalendar">
+                        <label for="selectTargetCalendar" id="lblTargetCalendar">Simpan ke Kalender</label>
                         <select id="selectTargetCalendar" class="form-select"></select>
                     </div>
                     <div class="form-group">
-                        <label for="inputEventTitle">Judul Acara</label>
+                        <label for="inputEventTitle" id="lblEventTitle">Judul Acara</label>
                         <input type="text" id="inputEventTitle" placeholder="Contoh: Diskusi Roadmap Produk" required>
                     </div>
                     <div class="form-group form-checkbox-group">
                         <label class="checkbox-label">
                             <input type="checkbox" id="checkboxAllDay">
-                            <span>Acara Seharian (All Day)</span>
+                            <span id="lblAllDay">Acara Seharian (All Day)</span>
                         </label>
                     </div>
                     <div class="form-row" id="timeInputsRow">
                         <div class="form-group">
-                            <label for="inputEventStart">Mulai</label>
+                            <label for="inputEventStart" id="lblEventStart">Mulai</label>
                             <input type="datetime-local" id="inputEventStart" required>
                         </div>
                         <div class="form-group">
-                            <label for="inputEventEnd">Selesai</label>
+                            <label for="inputEventEnd" id="lblEventEnd">Selesai</label>
                             <input type="datetime-local" id="inputEventEnd" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="inputEventLocation">Lokasi (Opsional)</label>
+                        <label for="inputEventLocation" id="lblEventLocation">Lokasi (Opsional)</label>
                         <input type="text" id="inputEventLocation" placeholder="Contoh: Gedung Lab B-204 / Google Meet">
                     </div>
                     <div class="form-group">
-                        <label for="inputEventDescription">Deskripsi (Opsional)</label>
-                        <textarea id="inputEventDescription" rows="2" placeholder="Catatan agenda atau tugas..."></textarea>
+                        <label for="inputEventDescription" id="lblEventDescription">Deskripsi (Opsional)</label>
+                        <textarea id="inputEventDescription" placeholder="Catatan agenda atau tugas..."></textarea>
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn-cancel" id="btnCancelModal">Batal</button>
                         <button type="submit" class="btn-submit" id="btnSubmitEvent">
-                            <span>Simpan ke Google</span>
+                            <span id="lblSubmitEventText">Simpan ke Google</span>
                             <span class="btn-icon-circle">↗</span>
                         </button>
                     </div>
@@ -268,12 +270,15 @@
                 <div class="details-top-bar">
                     <div class="details-cal-badge-wrap">
                         <span class="details-cal-badge" id="detailCalBadge">Kalender</span>
+                        <span class="details-tag-chip" id="detailEventTypeChip" style="display: none;"></span>
+                        <span class="details-tag-chip" id="detailTransparencyChip" style="display: none;"></span>
+                        <span class="details-tag-chip" id="detailRecurringChip" style="display: none;"></span>
                         <button type="button" class="btn-copy-chip" id="btnCopyCalLink" style="display: none;" title="Salin URL Kalender Asli" aria-label="Salin URL Kalender">
                             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                             </svg>
-                            <span>Salin Link</span>
+                            <span id="lblCopyCalLink">Salin Link</span>
                         </button>
                     </div>
                     <button class="modal-close-btn" id="btnCloseDetailModal" aria-label="Tutup Modal Detail">
@@ -292,20 +297,37 @@
                             <polyline points="12 6 12 12 16 14"/>
                         </svg>
                         <div class="details-time-text">
-                            <span id="detailTime">Senin, 24 Agustus • 08:00 - 10:00</span>
-                            <span class="details-countdown-badge" id="detailCountdown">2 jam lagi</span>
+                            <span id="detailTime">--</span>
+                            <span class="details-countdown-badge" id="detailCountdown">--</span>
                         </div>
                     </div>
 
                     <div class="details-meet-container" id="detailMeetContainer" style="display: none;">
                         <button type="button" class="btn-join-meet" id="btnDetailJoinMeet">
                             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="23 7 16 12 23 17 23 7"/>
+                                <polygon points="23 7 16 12 23 7"/>
                                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                             </svg>
-                            <span>Gabung Google Meet</span>
+                            <span id="lblJoinMeetText">Gabung Google Meet</span>
                             <span class="btn-icon-circle">↗</span>
                         </button>
+                    </div>
+
+                    <!-- Conference Dial-in / PIN info -->
+                    <div class="details-row" id="detailConferenceNotesRow" style="display: none;">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                        <div class="details-loc-text">
+                            <span id="detailConferenceNotes">PIN / Telepon</span>
+                            <button type="button" class="btn-copy-chip" id="btnCopyConference" title="Salin Info Dial-In" aria-label="Salin PIN">
+                                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                <span id="lblCopyConference">Salin</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="details-row" id="detailLocationRow" style="display: none;">
@@ -314,15 +336,21 @@
                             <circle cx="12" cy="10" r="3"/>
                         </svg>
                         <div class="details-loc-text">
-                            <span id="detailLocation">Ruang Lab B-204</span>
+                            <span id="detailLocation">--</span>
                             <button type="button" class="btn-copy-chip" id="btnCopyLocation" title="Salin Lokasi" aria-label="Salin Lokasi">
                                 <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                                 </svg>
-                                <span>Salin</span>
+                                <span id="lblCopyLocation">Salin</span>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Google Drive Attachments Section -->
+                    <div class="details-section" id="detailAttachmentsSection" style="display: none;">
+                        <div class="details-section-label" id="lblDetailAttachments">Lampiran Dokumen (Drive)</div>
+                        <div class="details-attachments-list" id="detailAttachmentsList"></div>
                     </div>
 
                     <div class="details-row" id="detailRemindersRow" style="display: none;">
@@ -330,11 +358,11 @@
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                         </svg>
-                        <span id="detailReminders">15 menit sebelumnya</span>
+                        <span id="detailReminders">--</span>
                     </div>
 
                     <div class="details-section" id="detailDescSection" style="display: none;">
-                        <div class="details-section-label">Deskripsi</div>
+                        <div class="details-section-label" id="lblDetailDesc">Deskripsi</div>
                         <div class="details-desc-content" id="detailDescription"></div>
                     </div>
 
@@ -350,8 +378,8 @@
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
                             <div class="creator-info">
-                                <span class="creator-label">Penyelenggara</span>
-                                <span class="creator-value" id="detailCreator">user@domain.com</span>
+                                <span class="creator-label" id="lblDetailCreator">Penyelenggara</span>
+                                <span class="creator-value" id="detailCreator">--</span>
                             </div>
                         </div>
                         <button type="button" class="btn-copy-chip" id="btnCopyCreator" title="Salin Info Pembuat" aria-label="Salin Pembuat">
@@ -359,21 +387,32 @@
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                             </svg>
-                            <span>Salin</span>
+                            <span id="lblCopyCreator">Salin</span>
                         </button>
+                    </div>
+
+                    <div class="details-meta-footer" id="detailMetaFooter" style="display: none;">
+                        <span id="detailCreatedTime">Dibuat: --</span>
                     </div>
                 </div>
 
                 <div class="modal-actions details-actions">
+                    <button type="button" class="btn-edit-outline" id="btnDetailEdit" title="Edit Acara" aria-label="Edit Acara">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        <span id="lblDetailEdit">Edit</span>
+                    </button>
                     <button type="button" class="btn-danger-outline" id="btnDetailDelete" title="Hapus Acara" aria-label="Hapus Acara">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                         </svg>
-                        <span>Hapus</span>
+                        <span id="lblDetailDelete">Hapus</span>
                     </button>
                     <button type="button" class="btn-secondary" id="btnDetailOpenWeb" title="Buka di Google Calendar Web" aria-label="Buka di Web">
-                        <span>Buka di Web</span>
+                        <span id="lblDetailOpenWeb">Buka di Web</span>
                         <span class="btn-icon-circle">↗</span>
                     </button>
                 </div>
@@ -500,7 +539,13 @@
                 <p id="lblAuthDesc">Hubungkan akun Google kamu untuk menampilkan agenda dan jadwal kegiatan harian langsung di desktop.</p>
                 
                 <div class="auth-creds-hint hidden" id="authCredsHint">
-                    <div class="auth-hint-icon">ℹ️</div>
+                    <div class="auth-hint-icon">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                    </div>
                     <div class="auth-hint-text" id="authHintText">
                         File <code>client_secret.json</code> belum terdeteksi. Silakan unduh OAuth Client ID dari Google Cloud Console dan masukkan ke folder aplikasi.
                     </div>

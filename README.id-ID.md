@@ -19,16 +19,18 @@ Widget kalender desktop bernuansa *ambient* modern untuk Windows, macOS, dan Lin
 Widget ini menghadirkan antarmuka desktop yang ringkas dan elegan untuk melihat jadwal kegiatan harian tanpa perlu membuka tab peramban (browser). Mendukung penempatan di desktop (gaya Rainmeter) maupun mode *Always on Top*, lengkap dengan sinkronisasi otomatis dan mode offline.
 
 ### Fitur Unggulan
-
-- **Dua Mode Tampilan**: Beralih fleksibel antara garis waktu **Agenda** kronologis dengan pengelompokan hari relatif, dan kisi interaktif **Kalender Bulanan**.
+ 
+- **Dua Mode Tampilan**: Beralih fleksibel antara garis waktu **Agenda** kronologis (fokus pada agenda hari ini & mendatang), dan kisi interaktif **Kalender Bulanan** dengan penjelajahan riwayat jadwal.
+- **Edit Acara Lengkap**: Ubah judul, waktu mulai/selesai, status seharian, lokasi, dan deskripsi acara langsung dari widget dengan pembaruan instan ke Google Calendar API v3.
+- **Penjelajahan Jadwal Riwayat (Masa Lalu)**: Lihat acara masa lalu di tab Kalender dengan titik indikator warna dan lencana status "Selesai / Past".
 - **Mesin Kontras & Warna Adaptif**: Mempertahankan palet warna asli Google Calendar dengan penyesuaian luminansi relatif standar ITU-R BT.709 agar tetap tajam dan terbaca jelas pada tema Gelap maupun Terang.
+- **Editor Deskripsi Fleksibel & Bersih**: Kotak input deskripsi yang otomatis menyesuaikan tinggi teks (hingga 180px) dengan scrollbar elegan dan pembersihan otomatis tag HTML kotor menjadi teks berpoin rapi.
+- **Pemotongan Cerdas URL & Nama Kalender**: Mencegah dropdown kalender melebar ke seluruh layar saat memuat nama URL webcal panjang.
 - **Dukungan Dwi-Bahasa (ID / EN)**: Penggantian bahasa instan antara Bahasa Indonesia dan Bahasa Inggris langsung dari header atau menu Pengaturan, lengkap dengan lokalisasi format tanggal/waktu.
-- **Ticker Hitung Mundur Acara Terdekat**: Banner atas dengan hitung mundur waktu nyata (*countdown*) yang otomatis dijeda saat jendela diminimalkan demi efisiensi CPU 0%.
+- **Ticker Hitung Mundur Acara Terdekat**: Banner atas dengan hitung mundur waktu nyata (*countdown*) dan lencana dinamis "SEGERA / BERJALAN".
 - **Peluncur Google Meet Cepat**: Tombol sekali klik untuk langsung bergabung ke konferensi video atau tautan rapat dari Google Calendar.
-- **Manajemen Acara Cepat**: Tambah agenda baru (harian / sepanjang hari) dan hapus acara dengan dialog konfirmasi in-app.
 - **Penyaringan Banyak Kalender**: Pilih dan saring kalender Google mana saja yang ingin ditampilkan (primer, pekerjaan, kalender bersama, hari libur) secara persisten.
-- **Format Domain Cerdas**: Menampilkan nama host yang bersih untuk URL panjang atau email penyelenggara, lengkap dengan tombol salin tautan asli.
-- **Ikon Vektor Presisi**: Ikon SVG *hairline* modern tanpa dekorasi berlebihan.
+- **Optimasi Daya & Penghematan Memori OS**: Integrasi `powerMonitor` dan `backgroundThrottling` untuk efisiensi CPU 0% saat jendela diminimalkan atau komputer dalam mode tidur (sleep).
 - **Pengubahan Ukuran Fleksibel**: 8 titik *handle* pengubah ukuran jendela dengan posisi dan dimensi yang otomatis tersimpan.
 - **Siklus Akun Lengkap**: Autentikasi OAuth 2.0 loopback aman dengan batas waktu 5 menit dan opsi putuskan akun (*logout*) yang membersihkan token dan cache dari disk.
 

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Menu, powerMonitor } = require('electron');
 const path = require('path');
 const { getIconPath } = require('./utils/paths');
 const { windowStateKeeper } = require('./services/windowState');
@@ -128,11 +128,24 @@ function registerIpcHandlers() {
     });
 
     ipcMain.handle('calendar:create-event', async (_event, data) => {
+        if (!data || typeof data !== 'object') throw new Error('Invalid event payload');
         return await calendarService.createQuickEvent(data);
     });
 
+    ipcMain.handle('calendar:update-event', async (_event, data) => {
+        if (!data || typeof data !== 'object' || !data.eventId) {
+            throw new Error('Invalid update event payload: eventId is required');
+        }
+        return await calendarService.updateEvent(data);
+    });
+
     ipcMain.handle('calendar:delete-event', async (_event, data) => {
+        if (!data || !data.eventId) throw new Error('Invalid delete payload: eventId is required');
         return await calendarService.deleteEvent(data);
+    });
+
+    ipcMain.handle('calendar:get-events-for-range', async (_event, rangeOptions) => {
+        return await calendarService.getEventsForRange(rangeOptions || {});
     });
 
     // Window Controls
@@ -177,11 +190,24 @@ function registerIpcHandlers() {
         }
     });
 
+    // Helper for safely opening external URLs with strict protocol validation
+    function safeOpenExternal(targetUrl) {
+        if (!targetUrl || typeof targetUrl !== 'string') return;
+        try {
+            const parsed = new URL(targetUrl);
+            if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+                shell.openExternal(parsed.href);
+            } else {
+                logger.warn('Security', `Blocked external link with unsafe protocol: ${parsed.protocol}`);
+            }
+        } catch (e) {
+            logger.warn('Security', `Blocked invalid external URL: ${targetUrl}`);
+        }
+    }
+
     // System Actions
     ipcMain.on('system:open-external', (_event, url) => {
-        if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
-            shell.openExternal(url);
-        }
+        safeOpenExternal(url);
     });
 }
 
@@ -253,8 +279,12 @@ async function createMainWindow() {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nodeIntegration: false,
-            sandbox: false,
-            webSecurity: true
+            sandbox: true,
+            webSecurity: true,
+            webviewTag: false,
+            allowRunningInsecureContent: false,
+            spellcheck: false,
+            backgroundThrottling: true
         }
     });
 
@@ -265,6 +295,33 @@ async function createMainWindow() {
     // Strip default menubar
     Menu.setApplicationMenu(null);
     mainWindow.setMenu(null);
+
+    // Navigation and external link security guards
+    mainWindow.webContents.on('will-navigate', (event, targetUrl) => {
+        try {
+            const parsed = new URL(targetUrl);
+            if (parsed.protocol !== 'file:') {
+                event.preventDefault();
+                safeOpenExternal(targetUrl);
+            }
+        } catch {
+            event.preventDefault();
+        }
+    });
+
+    mainWindow.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
+        safeOpenExternal(targetUrl);
+        return { action: 'deny' };
+    });
+
+    // Disable DevTools shortcuts in production
+    if (app.isPackaged) {
+        mainWindow.webContents.on('before-input-event', (event, input) => {
+            if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+                event.preventDefault();
+            }
+        });
+    }
 
     const widgetHtmlPath = path.join(__dirname, 'renderer', 'widget.html');
     mainWindow.loadFile(widgetHtmlPath);
@@ -277,6 +334,13 @@ async function createMainWindow() {
                 try { global.gc(); } catch {}
             }
         }, 1500);
+    });
+
+    // Immediate memory trim when window is hidden to system tray
+    mainWindow.on('hide', () => {
+        if (typeof global.gc === 'function') {
+            try { global.gc(); } catch {}
+        }
     });
 
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
@@ -298,6 +362,28 @@ async function createMainWindow() {
 
 function initApp() {
     registerIpcHandlers();
+
+    // OS Power Management: pause sync on sleep, resume immediately on wake
+    if (powerMonitor) {
+        powerMonitor.on('suspend', () => {
+            logger.info('Power', 'System suspended/sleeping — pausing background auto-sync');
+            if (autoSyncTimerId) {
+                clearTimeout(autoSyncTimerId);
+                autoSyncTimerId = null;
+            }
+        });
+
+        powerMonitor.on('resume', () => {
+            logger.info('Power', 'System resumed/woke — triggering immediate sync');
+            scheduleNextSync(3000);
+        });
+
+        powerMonitor.on('unlock-screen', () => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('calendar:events-updated', {});
+            }
+        });
+    }
 
     app.whenReady().then(async () => {
         await createMainWindow();

@@ -16,7 +16,9 @@ contextBridge.exposeInMainWorld('calendarWidgetAPI', {
         getCalendarList: () => ipcRenderer.invoke('calendar:get-calendar-list'),
         setSelectedCalendars: (ids) => ipcRenderer.invoke('calendar:set-selected-calendars', ids),
         createQuickEvent: (data) => ipcRenderer.invoke('calendar:create-event', data),
-        deleteEvent: (data) => ipcRenderer.invoke('calendar:delete-event', data)
+        updateEvent: (data) => ipcRenderer.invoke('calendar:update-event', data),
+        deleteEvent: (data) => ipcRenderer.invoke('calendar:delete-event', data),
+        getEventsForRange: (data) => ipcRenderer.invoke('calendar:get-events-for-range', data)
     },
     window: {
         close: () => ipcRenderer.send('window:close'),

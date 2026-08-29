@@ -56,11 +56,15 @@
     const selectedDateTitle = document.getElementById('selectedDateTitle');
     const dayEventsList = document.getElementById('dayEventsList');
 
-    // Quick Add Modal Elements
+    // Quick Add & Edit Modal Elements
     const addEventModal = document.getElementById('addEventModal');
+    const modalEventEyebrow = document.getElementById('modalEventEyebrow');
+    const addEventModalTitle = document.getElementById('addEventModalTitle');
     const btnCloseModal = document.getElementById('btnCloseModal');
     const btnCancelModal = document.getElementById('btnCancelModal');
     const formAddEvent = document.getElementById('formAddEvent');
+    const inputEventId = document.getElementById('inputEventId');
+    const inputEventMode = document.getElementById('inputEventMode');
     const selectTargetCalendar = document.getElementById('selectTargetCalendar');
     const inputEventTitle = document.getElementById('inputEventTitle');
     const checkboxAllDay = document.getElementById('checkboxAllDay');
@@ -68,6 +72,7 @@
     const inputEventEnd = document.getElementById('inputEventEnd');
     const inputEventLocation = document.getElementById('inputEventLocation');
     const inputEventDescription = document.getElementById('inputEventDescription');
+    const lblSubmitEventText = document.getElementById('lblSubmitEventText');
 
     // Event Details Modal Elements
     const eventDetailsModal = document.getElementById('eventDetailsModal');
@@ -90,6 +95,7 @@
     const detailCreatorRow = document.getElementById('detailCreatorRow');
     const detailCreator = document.getElementById('detailCreator');
     const btnCopyCreator = document.getElementById('btnCopyCreator');
+    const btnDetailEdit = document.getElementById('btnDetailEdit');
     const btnDetailDelete = document.getElementById('btnDetailDelete');
     const btnDetailOpenWeb = document.getElementById('btnDetailOpenWeb');
 
@@ -112,6 +118,7 @@
     const toastContainer = document.getElementById('toastContainer');
 
     // Internationalization (i18n) Engine
+    // Internationalization (i18n) Engine
     const I18N_STRINGS = {
         id: {
             locale: 'id-ID',
@@ -132,8 +139,13 @@
             addEventTitle: 'Tambah Acara Baru',
             minimizeTitle: 'Minimize Window',
             closeTitle: 'Tutup Window',
+            resizeHandleTitle: 'Tarik untuk mengubah ukuran',
+            prevMonthTitle: 'Bulan Sebelumnya',
+            nextMonthTitle: 'Bulan Berikutnya',
+            closeModalAria: 'Tutup Modal',
             
             bannerUpcoming: 'SEGERA',
+            bannerOngoing: 'BERJALAN',
             bannerNoEvents: 'Tidak ada agenda dekat',
             bannerRelax: 'Santai sejenak',
             
@@ -167,6 +179,8 @@
             
             modalAddEyebrow: 'AGENDA BARU',
             modalAddTitle: 'Tambah Acara',
+            modalEditEyebrow: 'EDIT AGENDA',
+            modalEditTitle: 'Edit Acara',
             lblTargetCalendar: 'Simpan ke Kalender',
             lblEventTitle: 'Judul Acara',
             phEventTitle: 'Contoh: Diskusi Roadmap Produk',
@@ -180,24 +194,82 @@
             btnCancel: 'Batal',
             btnSubmitEvent: 'Simpan ke Google',
             btnSubmitting: 'Menyimpan...',
+            btnUpdateEvent: 'Simpan Perubahan',
+            btnUpdating: 'Menyimpan...',
             valEndAfterStart: 'Waktu selesai harus setelah waktu mulai!',
             toastEventSaved: 'Acara berhasil disimpan ke Google Calendar!',
             toastEventSaveFailed: (err) => `Gagal menambah acara: ${err}`,
+            toastEventUpdated: 'Acara berhasil diperbarui di Google Calendar!',
+            toastEventUpdateFailed: (err) => `Gagal memperbarui acara: ${err}`,
+            pastEventBadge: 'Selesai',
+            pastEventBadgeTitle: 'Acara telah selesai',
             
+            // Event Details Modal & Rich API Labels
+            btnEditEvent: 'Edit',
             detailLocation: 'Lokasi',
             detailReminders: 'Pengingat',
             detailDesc: 'Deskripsi',
             detailCreator: 'Pembuat Acara',
             detailOrganizer: 'Penyelenggara',
-            detailAttendees: (n) => `Peserta (${n}):`,
+            detailAttendees: (n) => `Peserta (${n})`,
             btnJoinMeetFull: 'Gabung Google Meet',
             btnDeleteEvent: 'Hapus',
             btnOpenWeb: 'Buka di Web',
+            btnCopy: 'Salin',
+            btnCopyLink: 'Salin Link',
+            copyCalTitle: 'Salin URL Kalender Asli',
+            copyConferenceTitle: 'Salin Info Dial-In',
+            copyLocTitle: 'Salin Lokasi',
+            copyCreatorTitle: 'Salin Info Pembuat',
             toastCopyCal: 'URL kalender asli berhasil disalin',
             toastCopyLoc: 'Lokasi berhasil disalin ke clipboard',
             toastCopyCreator: 'Info pembuat berhasil disalin ke clipboard',
+            toastCopyConference: 'Info dial-in berhasil disalin ke clipboard',
             toastEventDeleted: 'Acara berhasil dihapus dari Google Calendar',
             toastEventDeleteFailed: (err) => `Gagal menghapus acara: ${err}`,
+
+            eventTypeFocus: 'Waktu Fokus',
+            eventTypeOoo: 'Sedang Cuti',
+            eventTypeWork: 'Lokasi Kerja',
+            eventTypeGmail: 'Reservasi Gmail',
+            eventTypeBirthday: 'Ulang Tahun',
+            transparencyFree: 'Tersedia (Bebas)',
+            transparencyBusy: 'Sibuk',
+            recurringLabel: 'Berulang',
+
+            badgeFocus: 'Fokus',
+            badgeFocusTitle: 'Waktu Fokus',
+            badgeOoo: 'Cuti',
+            badgeOooTitle: 'Sedang Cuti',
+            badgeWork: 'Kerja',
+            badgeWorkTitle: 'Lokasi Kerja',
+            badgeGmail: 'Gmail',
+            badgeGmailTitle: 'Reservasi Gmail',
+            badgeBirthday: 'Ultah',
+            badgeBirthdayTitle: 'Ulang Tahun',
+            badgeAttachments: (n) => `${n} File`,
+            badgeAttachmentsTitle: (n) => `${n} Dokumen Google Drive`,
+            badgeRecurringTitle: 'Acara Berulang',
+            badgeFreeTitle: 'Tersedia (Bebas)',
+
+            detailAttachmentsLabel: 'Lampiran Dokumen (Drive)',
+            detailDescLabel: 'Deskripsi',
+            detailCreatorLabel: 'Penyelenggara',
+            detailCreatedUpdated: (cr, up) => `Dibuat: ${cr}${up ? ` • Diperbarui: ${up}` : ''}`,
+            reminderDefault: 'Pengingat bawaan kalender',
+            reminderBefore: (m, method) => `${m} menit sebelumnya (${method})`,
+
+            rsvpAccepted: 'Diterima',
+            rsvpTentative: 'Ragu-ragu',
+            rsvpDeclined: 'Ditolak',
+            rsvpNeedsAction: 'Menunggu respon',
+            rsvpOrganizer: 'Penyelenggara',
+            attendeeOptional: ' (Opsional)',
+            attendeeTooltip: (email, status) => `${email} • Status: ${status}`,
+
+            primaryCalendarLabel: 'Kalender Utama',
+            googleCalendarLabel: 'Kalender Google',
+            primarySuffix: ' (Utama)',
             
             settingsEyebrow: 'PENGATURAN',
             settingsTitle: 'Pengaturan & Kalender',
@@ -271,8 +343,13 @@
             addEventTitle: 'Add New Event',
             minimizeTitle: 'Minimize Window',
             closeTitle: 'Close Window',
+            resizeHandleTitle: 'Drag to resize window',
+            prevMonthTitle: 'Previous Month',
+            nextMonthTitle: 'Next Month',
+            closeModalAria: 'Close Modal',
             
             bannerUpcoming: 'UPCOMING',
+            bannerOngoing: 'RUNNING',
             bannerNoEvents: 'No upcoming events',
             bannerRelax: 'Relax for a while',
             
@@ -306,6 +383,8 @@
             
             modalAddEyebrow: 'NEW EVENT',
             modalAddTitle: 'Add Event',
+            modalEditEyebrow: 'EDIT EVENT',
+            modalEditTitle: 'Edit Event',
             lblTargetCalendar: 'Save to Calendar',
             lblEventTitle: 'Event Title',
             phEventTitle: 'e.g. Product Roadmap Discussion',
@@ -319,24 +398,82 @@
             btnCancel: 'Cancel',
             btnSubmitEvent: 'Save to Google',
             btnSubmitting: 'Saving...',
+            btnUpdateEvent: 'Save Changes',
+            btnUpdating: 'Saving...',
             valEndAfterStart: 'End time must be after start time!',
             toastEventSaved: 'Event saved to Google Calendar successfully!',
             toastEventSaveFailed: (err) => `Failed to add event: ${err}`,
+            toastEventUpdated: 'Event updated in Google Calendar successfully!',
+            toastEventUpdateFailed: (err) => `Failed to update event: ${err}`,
+            pastEventBadge: 'Past',
+            pastEventBadgeTitle: 'Event has ended',
             
+            // Event Details Modal & Rich API Labels
+            btnEditEvent: 'Edit',
             detailLocation: 'Location',
             detailReminders: 'Reminders',
             detailDesc: 'Description / Notes',
             detailCreator: 'Event Creator',
             detailOrganizer: 'Organizer',
-            detailAttendees: (n) => `Attendees (${n}):`,
+            detailAttendees: (n) => `Attendees (${n})`,
             btnJoinMeetFull: 'Join Google Meet',
             btnDeleteEvent: 'Delete',
             btnOpenWeb: 'Open in Web',
+            btnCopy: 'Copy',
+            btnCopyLink: 'Copy Link',
+            copyCalTitle: 'Copy Original Calendar URL',
+            copyConferenceTitle: 'Copy Dial-In Info',
+            copyLocTitle: 'Copy Location',
+            copyCreatorTitle: 'Copy Creator Info',
             toastCopyCal: 'Original calendar URL copied to clipboard',
             toastCopyLoc: 'Location copied to clipboard',
             toastCopyCreator: 'Creator info copied to clipboard',
+            toastCopyConference: 'Dial-in info copied to clipboard',
             toastEventDeleted: 'Event deleted from Google Calendar',
             toastEventDeleteFailed: (err) => `Failed to delete event: ${err}`,
+
+            eventTypeFocus: 'Focus Time',
+            eventTypeOoo: 'Out of Office',
+            eventTypeWork: 'Work Location',
+            eventTypeGmail: 'Gmail Booking',
+            eventTypeBirthday: 'Birthday',
+            transparencyFree: 'Available (Free)',
+            transparencyBusy: 'Busy',
+            recurringLabel: 'Recurring',
+
+            badgeFocus: 'Focus',
+            badgeFocusTitle: 'Focus Time',
+            badgeOoo: 'OOO',
+            badgeOooTitle: 'Out of Office',
+            badgeWork: 'Work',
+            badgeWorkTitle: 'Work Location',
+            badgeGmail: 'Gmail',
+            badgeGmailTitle: 'Gmail Booking',
+            badgeBirthday: 'Bday',
+            badgeBirthdayTitle: 'Birthday',
+            badgeAttachments: (n) => `${n} Files`,
+            badgeAttachmentsTitle: (n) => `${n} Google Drive files`,
+            badgeRecurringTitle: 'Recurring Event',
+            badgeFreeTitle: 'Available (Free)',
+
+            detailAttachmentsLabel: 'Attachments (Google Drive)',
+            detailDescLabel: 'Description / Notes',
+            detailCreatorLabel: 'Organizer',
+            detailCreatedUpdated: (cr, up) => `Created: ${cr}${up ? ` • Updated: ${up}` : ''}`,
+            reminderDefault: 'Default calendar reminder',
+            reminderBefore: (m, method) => `${m} minutes before (${method})`,
+
+            rsvpAccepted: 'Accepted',
+            rsvpTentative: 'Tentative',
+            rsvpDeclined: 'Declined',
+            rsvpNeedsAction: 'Needs Action',
+            rsvpOrganizer: 'Organizer',
+            attendeeOptional: ' (Optional)',
+            attendeeTooltip: (email, status) => `${email} • Status: ${status}`,
+
+            primaryCalendarLabel: 'Primary Calendar',
+            googleCalendarLabel: 'Google Calendar',
+            primarySuffix: ' (Primary)',
             
             settingsEyebrow: 'SETTINGS',
             settingsTitle: 'Settings & Calendars',
@@ -394,6 +531,7 @@
     };
 
     let currentLang = localStorage.getItem('calendar_widget_lang') || 'en';
+    let currentSyncState = 'synced';
 
     function t(key, ...args) {
         const langObj = I18N_STRINGS[currentLang] || I18N_STRINGS.en;
@@ -402,6 +540,27 @@
             return val(...args);
         }
         return val;
+    }
+
+    function setSyncStatus(state) {
+        currentSyncState = state;
+        if (!statusDot || !statusLabel) return;
+        if (state === 'syncing') {
+            statusDot.className = 'status-dot syncing';
+            statusLabel.textContent = t('syncing');
+        } else if (state === 'offlineCache') {
+            statusDot.className = 'status-dot offline';
+            statusLabel.textContent = t('offlineCache');
+        } else if (state === 'notLoggedIn') {
+            statusDot.className = 'status-dot offline';
+            statusLabel.textContent = t('notLoggedIn');
+        } else if (state === 'syncFailed') {
+            statusDot.className = 'status-dot offline';
+            statusLabel.textContent = t('syncFailed');
+        } else {
+            statusDot.className = 'status-dot';
+            statusLabel.textContent = t('synced');
+        }
     }
 
     function applyLanguage(lang) {
@@ -429,6 +588,11 @@
         if (btnMinimize) btnMinimize.setAttribute('title', t('minimizeTitle'));
         if (btnClose) btnClose.setAttribute('title', t('closeTitle'));
 
+        const appTitleEl = document.querySelector('.app-title');
+        if (appTitleEl) appTitleEl.textContent = t('appTitle');
+
+        setSyncStatus(currentSyncState);
+
         // Update Tab Labels
         const tabSpans = document.querySelectorAll('.tab-btn span');
         if (tabSpans.length >= 2) {
@@ -436,9 +600,12 @@
             tabSpans[1].textContent = t('tabMonth');
         }
 
-        // Update Banner Badge
-        const badgeLabel = nextEventBanner ? nextEventBanner.querySelector('.badge-label') : null;
-        if (badgeLabel) badgeLabel.textContent = t('bannerUpcoming');
+        // Update Banner (with dynamic SEGERA/BERJALAN badge)
+        updateNextEventBanner();
+
+        // Update Calendar Navigation
+        if (prevMonthBtn) prevMonthBtn.setAttribute('aria-label', t('prevMonthTitle'));
+        if (nextMonthBtn) nextMonthBtn.setAttribute('aria-label', t('nextMonthTitle'));
 
         // Update Weekdays in Mini Calendar
         const calWeekdays = document.querySelector('.cal-weekdays');
@@ -546,18 +713,56 @@
         }
 
         // Update Details Modal Static Buttons & Labels
-        if (btnDetailJoinMeet) {
-            const span = btnDetailJoinMeet.querySelector('span');
-            if (span) span.textContent = t('btnJoinMeetFull');
-        }
+        const lblCopyCalLink = document.getElementById('lblCopyCalLink');
+        if (lblCopyCalLink) lblCopyCalLink.textContent = t('btnCopyLink');
+        if (btnCopyCalLink) btnCopyCalLink.setAttribute('title', t('copyCalTitle'));
+
+        const lblJoinMeetText = document.getElementById('lblJoinMeetText');
+        if (lblJoinMeetText) lblJoinMeetText.textContent = t('btnJoinMeetFull');
+
+        const lblCopyConference = document.getElementById('lblCopyConference');
+        if (lblCopyConference) lblCopyConference.textContent = t('btnCopy');
+        const btnCopyConference = document.getElementById('btnCopyConference');
+        if (btnCopyConference) btnCopyConference.setAttribute('title', t('copyConferenceTitle'));
+
+        const lblCopyLocation = document.getElementById('lblCopyLocation');
+        if (lblCopyLocation) lblCopyLocation.textContent = t('btnCopy');
+        if (btnCopyLocation) btnCopyLocation.setAttribute('title', t('copyLocTitle'));
+
+        const lblDetailAttachments = document.getElementById('lblDetailAttachments');
+        if (lblDetailAttachments) lblDetailAttachments.textContent = t('detailAttachmentsLabel');
+
+        const lblDetailDesc = document.getElementById('lblDetailDesc');
+        if (lblDetailDesc) lblDetailDesc.textContent = t('detailDescLabel');
+
+        const lblDetailCreator = document.getElementById('lblDetailCreator');
+        if (lblDetailCreator) lblDetailCreator.textContent = t('detailCreatorLabel');
+
+        const lblCopyCreator = document.getElementById('lblCopyCreator');
+        if (lblCopyCreator) lblCopyCreator.textContent = t('btnCopy');
+        if (btnCopyCreator) btnCopyCreator.setAttribute('title', t('copyCreatorTitle'));
+
         if (btnDetailDelete) {
             const span = btnDetailDelete.querySelector('span');
             if (span) span.textContent = t('btnDeleteEvent');
+            btnDetailDelete.setAttribute('title', t('btnDeleteEvent'));
         }
         if (btnDetailOpenWeb) {
             const span = btnDetailOpenWeb.querySelector('span');
             if (span) span.textContent = t('btnOpenWeb');
+            btnDetailOpenWeb.setAttribute('title', t('btnOpenWeb'));
         }
+
+        // Update Confirmation Modals
+        if (btnCancelDelete) btnCancelDelete.textContent = t('btnCancel');
+        const confirmDeleteTitleEl = document.getElementById('confirmDeleteTitle');
+        if (confirmDeleteTitleEl && !pendingDeleteAction) confirmDeleteTitleEl.textContent = t('confirmDeleteTitle');
+        if (btnConfirmDelete && !pendingDeleteAction) btnConfirmDelete.textContent = t('confirmDeleteBtn');
+
+        // Update Resize Handles
+        document.querySelectorAll('.resize-handle').forEach(h => {
+            h.setAttribute('title', t('resizeHandleTitle'));
+        });
 
         // Update Auth Overlay
         if (authOverlay) {
@@ -570,6 +775,21 @@
             const lblOpenCredsAuthBtn = document.getElementById('lblOpenCredsAuthBtn');
             if (lblOpenCredsAuthBtn) lblOpenCredsAuthBtn.textContent = t('authOpenCredsFolder');
             if (authHintText) authHintText.innerHTML = t('authCredsMissingHint');
+        }
+
+        // Re-render Timeline & Banner with translated date labels, countdowns, and badges
+        if (allEvents && allEvents.length > 0) {
+            renderTimeline(allEvents);
+            updateNextEventBanner();
+        } else if (eventsTimeline && eventsTimeline.querySelector('.empty-state-card')) {
+            renderTimelineEmpty();
+        }
+
+        // Re-render Calendar view with translated month & day strings
+        if (viewMonth && viewMonth.classList.contains('active')) {
+            renderMiniCalendar();
+        } else if (selectedCalendarDate) {
+            renderSelectedDayEvents(selectedCalendarDate);
         }
     }
 
@@ -1102,16 +1322,31 @@
     function updateNextEventBanner() {
         const now = new Date().getTime();
         const futureEvents = allEvents.filter(ev => new Date(ev.end).getTime() > now);
+        const badgeLabel = nextEventBanner ? nextEventBanner.querySelector('.badge-label') : null;
+        const bannerBadge = nextEventBanner ? nextEventBanner.querySelector('.banner-badge') : null;
 
         if (futureEvents.length === 0) {
             nextEventTitle.textContent = t('bannerNoEvents');
             nextEventTime.textContent = '--:--';
             nextEventCountdown.textContent = t('bannerRelax');
+            if (badgeLabel) badgeLabel.textContent = t('bannerUpcoming');
+            if (bannerBadge) bannerBadge.classList.remove('ongoing');
             nextEventBanner.onclick = null;
             return;
         }
 
         const nextEv = futureEvents[0];
+        const startMs = new Date(nextEv.start).getTime();
+        const endMs = new Date(nextEv.end).getTime();
+        const isOngoing = now >= startMs && now <= endMs;
+
+        if (badgeLabel) {
+            badgeLabel.textContent = isOngoing ? t('bannerOngoing') : t('bannerUpcoming');
+        }
+        if (bannerBadge) {
+            bannerBadge.classList.toggle('ongoing', isOngoing);
+        }
+
         nextEventTitle.textContent = nextEv.summary;
         nextEventTime.textContent = formatTime(nextEv.start, nextEv.end, nextEv.isAllDay);
         nextEventCountdown.textContent = getEventCountdown(nextEv.start, nextEv.end);
@@ -1125,7 +1360,7 @@
         activeDetailEvent = ev;
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const colorInfo = resolveEventColors(ev.calendarColor, isLight);
+        const colorInfo = resolveEventColors(ev.eventColor || ev.calendarColor, isLight);
         const calParse = parseHostOrText(ev.calendarName || t('appTitle'));
 
         detailCalBadge.textContent = calParse.display;
@@ -1134,7 +1369,56 @@
         detailCalBadge.style.setProperty('--event-badge-text', colorInfo.badgeText);
         detailCalBadge.style.setProperty('--event-badge-border', colorInfo.badgeBorder);
 
-        if (calParse.isUrl) {
+        // Special Tags (Event Type, Availability, Recurrence)
+        const detailEventTypeChip = document.getElementById('detailEventTypeChip');
+        const detailTransparencyChip = document.getElementById('detailTransparencyChip');
+        const detailRecurringChip = document.getElementById('detailRecurringChip');
+
+        if (detailEventTypeChip) {
+            const eventTypeIcons = {
+                focusTime: '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+                outOfOffice: '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                workingLocation: '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+                fromGmail: '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                birthday: '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>'
+            };
+            const eventTypeNames = {
+                focusTime: t('eventTypeFocus'),
+                outOfOffice: t('eventTypeOoo'),
+                workingLocation: t('eventTypeWork'),
+                fromGmail: t('eventTypeGmail'),
+                birthday: t('eventTypeBirthday')
+            };
+            if (ev.eventType && eventTypeNames[ev.eventType]) {
+                const iconSvg = eventTypeIcons[ev.eventType] || '';
+                detailEventTypeChip.innerHTML = `${iconSvg}<span>${eventTypeNames[ev.eventType]}</span>`;
+                detailEventTypeChip.style.display = 'inline-flex';
+            } else {
+                detailEventTypeChip.style.display = 'none';
+            }
+        }
+
+        if (detailTransparencyChip) {
+            const isFree = ev.transparency === 'transparent';
+            const dotSvg = `<svg viewBox="0 0 24 24" width="8" height="8" fill="${isFree ? '#10b981' : '#f43f5e'}"><circle cx="12" cy="12" r="9"/></svg>`;
+            detailTransparencyChip.innerHTML = `${dotSvg}<span>${isFree ? t('transparencyFree') : t('transparencyBusy')}</span>`;
+            detailTransparencyChip.style.display = 'inline-flex';
+        }
+
+        if (detailRecurringChip) {
+            detailRecurringChip.innerHTML = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg><span>${t('recurringLabel')}</span>`;
+            detailRecurringChip.style.display = ev.recurring ? 'inline-flex' : 'none';
+        }
+
+        if (ev.htmlLink) {
+            btnCopyCalLink.style.display = 'inline-flex';
+            btnCopyCalLink.onclick = () => {
+                navigator.clipboard.writeText(ev.htmlLink);
+                btnCopyCalLink.classList.add('copied');
+                showToast(t('toastCopyCal'), 'info', 2000);
+                setTimeout(() => { btnCopyCalLink.classList.remove('copied'); }, 2000);
+            };
+        } else if (calParse.isUrl) {
             btnCopyCalLink.style.display = 'inline-flex';
             btnCopyCalLink.onclick = () => {
                 navigator.clipboard.writeText(calParse.raw);
@@ -1166,6 +1450,31 @@
             detailMeetContainer.style.display = 'none';
         }
 
+        // Conference Notes / Dial-in
+        const detailConferenceNotesRow = document.getElementById('detailConferenceNotesRow');
+        const detailConferenceNotes = document.getElementById('detailConferenceNotes');
+        const btnCopyConference = document.getElementById('btnCopyConference');
+        if (detailConferenceNotesRow && ev.conferenceDetails && ev.conferenceDetails.entryPoints && ev.conferenceDetails.entryPoints.length > 0) {
+            const dialIn = ev.conferenceDetails.entryPoints.find(ep => ep.entryPointType === 'phone' || ep.pin);
+            if (dialIn) {
+                detailConferenceNotesRow.style.display = 'flex';
+                const dialText = `${dialIn.label || 'Dial-in'}: ${dialIn.uri || ''} (PIN: ${dialIn.pin || '-'})`;
+                if (detailConferenceNotes) detailConferenceNotes.textContent = dialText;
+                if (btnCopyConference) {
+                    btnCopyConference.onclick = () => {
+                        navigator.clipboard.writeText(dialText);
+                        btnCopyConference.classList.add('copied');
+                        showToast(t('toastCopyConference'), 'info', 2000);
+                        setTimeout(() => { btnCopyConference.classList.remove('copied'); }, 2000);
+                    };
+                }
+            } else {
+                detailConferenceNotesRow.style.display = 'none';
+            }
+        } else if (detailConferenceNotesRow) {
+            detailConferenceNotesRow.style.display = 'none';
+        }
+
         // Location
         if (ev.location && ev.location.trim()) {
             detailLocationRow.style.display = 'flex';
@@ -1180,10 +1489,53 @@
             detailLocationRow.style.display = 'none';
         }
 
+        // Google Drive Attachments
+        const detailAttachmentsSection = document.getElementById('detailAttachmentsSection');
+        const detailAttachmentsList = document.getElementById('detailAttachmentsList');
+        if (detailAttachmentsSection && detailAttachmentsList) {
+            if (ev.attachments && ev.attachments.length > 0) {
+                detailAttachmentsSection.style.display = 'flex';
+                detailAttachmentsList.innerHTML = '';
+                ev.attachments.forEach(att => {
+                    const chip = document.createElement('a');
+                    chip.className = 'details-attachment-chip';
+                    chip.href = '#';
+                    chip.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;">${att.title}</span>
+                        <span class="att-arrow">↗</span>
+                    `;
+                    chip.onclick = (e) => {
+                        e.preventDefault();
+                        if (window.calendarWidgetAPI && att.fileUrl) {
+                            window.calendarWidgetAPI.system.openExternal(att.fileUrl);
+                        }
+                    };
+                    detailAttachmentsList.appendChild(chip);
+                });
+            } else {
+                detailAttachmentsSection.style.display = 'none';
+            }
+        }
+
         // Reminders / Notification
         const detailRemindersRow = document.getElementById('detailRemindersRow');
         const detailReminders = document.getElementById('detailReminders');
-        if (ev.reminders && ev.reminders.length > 0) {
+        if (ev.remindersData && (ev.remindersData.useDefault || (ev.remindersData.overrides && ev.remindersData.overrides.length > 0))) {
+            detailRemindersRow.style.display = 'flex';
+            if (ev.remindersData.useDefault) {
+                detailReminders.textContent = t('reminderDefault');
+            } else {
+                detailReminders.textContent = ev.remindersData.overrides
+                    .map(r => t('reminderBefore', r.minutes, r.method || 'popup'))
+                    .join(', ');
+            }
+        } else if (ev.reminders && ev.reminders.length > 0) {
             detailRemindersRow.style.display = 'flex';
             detailReminders.textContent = ev.reminders.join(', ');
         } else {
@@ -1226,23 +1578,53 @@
             detailCreatorRow.style.display = 'none';
         }
 
-        // Attendees
+        // Attendees with RSVP status
         if (ev.attendees && ev.attendees.length > 0) {
             detailAttendeesSection.style.display = 'flex';
             detailAttendeesLabel.textContent = t('detailAttendees', ev.attendees.length);
+            const rsvpIcons = {
+                accepted: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="rsvp-icon rsvp-accepted"><polyline points="20 6 9 17 4 12"/></svg>',
+                tentative: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rsvp-icon rsvp-tentative"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                declined: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="rsvp-icon rsvp-declined"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+                needsAction: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rsvp-icon rsvp-pending"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>'
+            };
+            const organizerStarSvg = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" class="rsvp-icon rsvp-organizer"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+            const defaultUserSvg = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="rsvp-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+            const rsvpStatusNames = {
+                accepted: t('rsvpAccepted'),
+                tentative: t('rsvpTentative'),
+                declined: t('rsvpDeclined'),
+                needsAction: t('rsvpNeedsAction')
+            };
             let attendeesHtml = '';
             ev.attendees.forEach(a => {
                 const statusClass = a.responseStatus === 'accepted' ? 'accepted' : (a.responseStatus === 'declined' ? 'declined' : 'tentative');
+                const icon = a.organizer ? organizerStarSvg : (rsvpIcons[a.responseStatus] || defaultUserSvg);
+                const optText = a.optional ? t('attendeeOptional') : '';
+                const roleName = a.organizer ? t('rsvpOrganizer') : (rsvpStatusNames[a.responseStatus] || a.responseStatus || 'pending');
                 attendeesHtml += `
-                    <div class="attendee-item ${statusClass}">
+                    <div class="attendee-item ${statusClass}" title="${t('attendeeTooltip', a.email, roleName)}">
                         <span class="status-dot-sm"></span>
-                        <span>${a.displayName || a.email}</span>
+                        <span style="display: inline-flex; align-items: center; gap: 5px;">${icon} <span>${a.displayName || a.email}${optText}</span></span>
                     </div>
                 `;
             });
             detailAttendeesList.innerHTML = attendeesHtml;
         } else {
             detailAttendeesSection.style.display = 'none';
+        }
+
+        // Metadata footer (Creation & Update timestamps)
+        const detailMetaFooter = document.getElementById('detailMetaFooter');
+        const detailCreatedTime = document.getElementById('detailCreatedTime');
+        if (detailMetaFooter && detailCreatedTime && (ev.created || ev.updated)) {
+            detailMetaFooter.style.display = 'flex';
+            const crDate = ev.created ? new Date(ev.created).toLocaleDateString(t('locale'), { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+            const upDate = ev.updated ? new Date(ev.updated).toLocaleDateString(t('locale'), { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+            detailCreatedTime.textContent = t('detailCreatedUpdated', crDate, upDate);
+        } else if (detailMetaFooter) {
+            detailMetaFooter.style.display = 'none';
         }
 
         // Action: Open in Web
@@ -1273,6 +1655,14 @@
         };
 
         eventDetailsModal.classList.add('active');
+        const card = eventDetailsModal.querySelector('.modal-card');
+        if (card) card.scrollTop = 0;
+        const widgetApp = document.getElementById('widgetApp');
+        if (widgetApp) {
+            widgetApp.scrollTop = 0;
+            widgetApp.scrollLeft = 0;
+        }
+        window.scrollTo(0, 0);
     }
 
     btnCloseDetailModal.addEventListener('click', () => {
@@ -1282,7 +1672,7 @@
     // Feedback States for Timeline (Skeleton, Empty, Error)
     function renderTimelineSkeleton() {
         eventsTimeline.innerHTML = `
-            <div class="skeleton-timeline" aria-busy="true" aria-label="${t('syncing')}">
+            <div class="skeleton-timeline" aria-busy="true" aria-label="Memuat jadwal...">
                 <div class="skeleton-date-header">
                     <div class="skeleton-pill" style="width: 70px;"></div>
                     <div class="skeleton-pill" style="width: 22px;"></div>
@@ -1379,16 +1769,30 @@
         }
     }
 
-    // Render Agenda Timeline
+    // Render Agenda Timeline (Focused on Present & Future Events)
     function renderTimeline(events) {
         if (!events || events.length === 0) {
             renderTimelineEmpty();
             return;
         }
 
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        // Agenda tab focus: show events occurring today or in the future
+        const agendaEvents = events.filter(ev => {
+            const endMs = new Date(ev.end).getTime();
+            return endMs >= startOfToday;
+        });
+
+        if (agendaEvents.length === 0) {
+            renderTimelineEmpty();
+            return;
+        }
+
         // Group by Date string
         const groups = {};
-        events.forEach(ev => {
+        agendaEvents.forEach(ev => {
             const dateObj = new Date(ev.start);
             const dateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
             if (!groups[dateKey]) {
@@ -1419,13 +1823,13 @@
 
             group.items.forEach((ev, idx) => {
                 overallCardIdx++;
-                const colorInfo = resolveEventColors(ev.calendarColor, isLight);
+                const colorInfo = resolveEventColors(ev.eventColor || ev.calendarColor, isLight);
                 const timeStr = formatTime(ev.start, ev.end, ev.isAllDay);
                 const calParse = parseHostOrText(ev.calendarName);
                 const meetBtn = ev.hangoutLink ? `
                     <a href="#" class="event-meet-btn" data-event-idx="${idx}" data-date-key="${dateKey}" title="${t('joinMeet')}">
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="23 7 16 12 23 17 23 7"/>
+                            <polygon points="23 7 16 12 23 7"/>
                             <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                         </svg>
                         <span>${t('joinMeet')}</span>
@@ -1447,13 +1851,40 @@
                     <span class="event-cal-badge" title="${calParse.raw}" style="--event-badge-bg: ${colorInfo.badgeBg}; --event-badge-text: ${colorInfo.badgeText}; --event-badge-border: ${colorInfo.badgeBorder};">${calParse.display}</span>
                 ` : '';
 
+                // Rich API Badges: Event Type, Attachments, Recurrence, Free/Busy (Using lightweight SVG icons)
+                let miniBadges = '';
+                if (ev.eventType === 'focusTime') {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeFocusTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> ${t('badgeFocus')}</span>`;
+                } else if (ev.eventType === 'outOfOffice') {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeOooTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> ${t('badgeOoo')}</span>`;
+                } else if (ev.eventType === 'workingLocation') {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeWorkTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> ${t('badgeWork')}</span>`;
+                } else if (ev.eventType === 'fromGmail') {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeGmailTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> ${t('badgeGmail')}</span>`;
+                } else if (ev.eventType === 'birthday') {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeBirthdayTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> ${t('badgeBirthday')}</span>`;
+                }
+
+                if (ev.attachments && ev.attachments.length > 0) {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeAttachmentsTitle', ev.attachments.length)}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> ${ev.attachments.length}</span>`;
+                }
+                if (ev.recurring) {
+                    miniBadges += `<span class="event-mini-badge" title="${t('badgeRecurringTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>`;
+                }
+                if (ev.transparency === 'transparent') {
+                    miniBadges += `<span class="event-mini-badge free-avail" title="${t('badgeFreeTitle')}"><svg viewBox="0 0 24 24" width="8" height="8" fill="currentColor"><circle cx="12" cy="12" r="9"/></svg></span>`;
+                }
+
                 html += `
                     <div class="event-card" data-event-idx="${idx}" data-date-key="${dateKey}" style="--card-index: ${overallCardIdx}; --event-accent: ${colorInfo.accent};">
                         <div class="event-color-strip" style="background-color: ${colorInfo.accent};"></div>
                         <div class="event-body">
                             <div class="event-title-row">
                                 <span class="event-title">${ev.summary}</span>
-                                ${calBadge}
+                                <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                                    ${miniBadges}
+                                    ${calBadge}
+                                </div>
                             </div>
                             <div class="event-time-row">
                                 <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="time-clock-icon">
@@ -1533,7 +1964,7 @@
             const hasEvents = dayEvents.length > 0;
             let dotsHtml = '';
             if (hasEvents) {
-                const uniqueColors = [...new Set(dayEvents.map(e => e.calendarColor || '#38bdf8'))].slice(0, 3);
+                const uniqueColors = [...new Set(dayEvents.map(e => e.eventColor || e.calendarColor || '#38bdf8'))].slice(0, 3);
                 dotsHtml = `<div class="cal-dots-wrap">${uniqueColors.map(c => `<span class="cal-day-dot" style="background-color: ${c};"></span>`).join('')}</div>`;
             }
 
@@ -1607,20 +2038,31 @@
         }
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const nowMs = Date.now();
         let html = '';
         currentDayMatches.forEach((ev, idx) => {
+            const isPast = new Date(ev.end).getTime() < nowMs;
             const colorInfo = resolveEventColors(ev.calendarColor, isLight);
             const calParse = parseHostOrText(ev.calendarName);
             const calBadge = calParse.display && calParse.display !== 'Primary' ? `
                 <span class="event-cal-badge" title="${calParse.raw}" style="--event-badge-bg: ${colorInfo.badgeBg}; --event-badge-text: ${colorInfo.badgeText}; --event-badge-border: ${colorInfo.badgeBorder}; font-size: 9px; padding: 1px 6px;">${calParse.display}</span>
             ` : '';
+            const pastBadge = isPast ? `
+                <span class="past-event-chip" title="${t('pastEventBadgeTitle')}">
+                    <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    <span>${t('pastEventBadge')}</span>
+                </span>
+            ` : '';
 
             html += `
-                <div class="event-card" style="margin-bottom: 6px; --card-index: ${idx + 1}; --event-accent: ${colorInfo.accent};" data-idx="${idx}">
+                <div class="event-card day-event-card ${isPast ? 'past-event' : ''}" style="margin-bottom: 6px; --card-index: ${idx + 1}; --event-accent: ${colorInfo.accent};" data-idx="${idx}">
                     <div class="event-color-strip" style="background-color: ${colorInfo.accent};"></div>
                     <div class="event-body">
                         <div class="event-title-row">
                             <span class="event-title" style="font-size: 12px;">${ev.summary}</span>
+                            ${pastBadge}
                             ${calBadge}
                         </div>
                         <div class="event-time-row" style="font-size: 11px;">
@@ -1738,9 +2180,7 @@
 
                 calendars.forEach(cal => {
                     const isChecked = selectedIds.includes(cal.id);
-                    const primaryLabel = currentLang === 'en' ? 'Primary Calendar' : 'Kalender Utama';
-                    const googleLabel = currentLang === 'en' ? 'Google Calendar' : 'Kalender Google';
-                    const desc = cal.primary ? primaryLabel : (cal.description || googleLabel);
+                    const desc = cal.primary ? t('primaryCalendarLabel') : (cal.description || t('googleCalendarLabel'));
                     html += `
                         <label class="calendar-checklist-item" data-id="${cal.id}">
                             <input type="checkbox" class="cal-checkbox" value="${cal.id}" ${isChecked ? 'checked' : ''}>
@@ -1853,7 +2293,59 @@
         }
     });
 
-    // Quick Add Event Modal & Calendar Target Selector
+    // Helper to format/truncate calendar names in native <select> options to prevent desktop overflow
+    function formatCalendarDropdownName(summary, maxLen = 36) {
+        if (!summary) return 'Kalender';
+        let clean = summary.trim();
+        if (/^https?:\/\//i.test(clean)) {
+            try {
+                const u = new URL(clean);
+                const pathParts = u.pathname.split('/').filter(Boolean);
+                const lastPart = pathParts.length > 0 ? pathParts[pathParts.length - 1] : '';
+                clean = `${u.hostname}${lastPart ? '/' + lastPart : ''}`;
+            } catch {
+                clean = clean.replace(/^https?:\/\//i, '');
+            }
+        }
+        if (clean.length > maxLen) {
+            return clean.substring(0, maxLen - 3) + '...';
+        }
+        return clean;
+    }
+
+    // Helper to convert HTML description from Google Calendar to clean plain text for textarea editing
+    function htmlToPlainText(html) {
+        if (!html) return '';
+        if (!/<[a-z][\s\S]*>/i.test(html)) return html;
+        try {
+            const temp = document.createElement('div');
+            let processed = html
+                .replace(/<li[^>]*>/gi, '\n• ')
+                .replace(/<\/li>/gi, '')
+                .replace(/<br\s*[\/]?>/gi, '\n')
+                .replace(/<p[^>]*>/gi, '')
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<ul[^>]*>|<ol[^>]*>|<\/ul>|<\/ol>/gi, '');
+            temp.innerHTML = processed;
+            return (temp.textContent || temp.innerText || '').trim();
+        } catch {
+            return html.replace(/<[^>]*>/g, '').trim();
+        }
+    }
+
+    // Auto-resize description textarea within bounded constraints (84px - 180px)
+    function autoResizeDescriptionTextarea() {
+        if (!inputEventDescription) return;
+        inputEventDescription.style.height = 'auto';
+        const targetHeight = Math.min(180, Math.max(84, inputEventDescription.scrollHeight));
+        inputEventDescription.style.height = `${targetHeight}px`;
+    }
+
+    if (inputEventDescription) {
+        inputEventDescription.addEventListener('input', autoResizeDescriptionTextarea);
+    }
+
+    // Quick Add & Edit Event Modal
     btnAddEvent.addEventListener('click', async () => {
         const now = new Date();
         const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
@@ -1861,6 +2353,12 @@
         // Format to YYYY-MM-DDTHH:mm
         const pad = n => String(n).padStart(2, '0');
         const formatLocal = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+        if (inputEventMode) inputEventMode.value = 'create';
+        if (inputEventId) inputEventId.value = '';
+        if (modalEventEyebrow) modalEventEyebrow.textContent = t('modalAddEyebrow');
+        if (addEventModalTitle) addEventModalTitle.textContent = t('modalAddTitle');
+        if (lblSubmitEventText) lblSubmitEventText.textContent = t('btnSubmitEvent');
 
         checkboxAllDay.checked = false;
         inputEventStart.type = 'datetime-local';
@@ -1871,15 +2369,18 @@
         inputEventTitle.value = '';
         inputEventLocation.value = '';
         inputEventDescription.value = '';
+        autoResizeDescriptionTextarea();
 
-        // Load calendars into dropdown
+        // Load calendars into dropdown with intelligent name truncation
         try {
             const listRes = await window.calendarWidgetAPI.calendar.getCalendarList();
             if (listRes && listRes.calendars) {
                 let optionsHtml = '';
                 listRes.calendars.forEach(c => {
-                    const primarySuffix = c.primary ? (currentLang === 'en' ? ' (Primary)' : ' (Utama)') : '';
-                    optionsHtml += `<option value="${c.id}">${c.summary}${primarySuffix}</option>`;
+                    const primarySuffix = c.primary ? t('primarySuffix') : '';
+                    const shortName = formatCalendarDropdownName(c.summary);
+                    const safeTitle = (c.summary || '').replace(/"/g, '&quot;');
+                    optionsHtml += `<option value="${c.id}" title="${safeTitle}">${shortName}${primarySuffix}</option>`;
                 });
                 selectTargetCalendar.innerHTML = optionsHtml;
             }
@@ -1898,6 +2399,80 @@
             inputEventTitle.focus({ preventScroll: true });
         }, 180);
     });
+
+    // Wire In-App Edit Button from Event Details
+    if (btnDetailEdit) {
+        btnDetailEdit.addEventListener('click', async () => {
+            if (!activeDetailEvent) return;
+            eventDetailsModal.classList.remove('active');
+
+            if (inputEventMode) inputEventMode.value = 'edit';
+            if (inputEventId) inputEventId.value = activeDetailEvent.id;
+            if (modalEventEyebrow) modalEventEyebrow.textContent = t('modalEditEyebrow');
+            if (addEventModalTitle) addEventModalTitle.textContent = t('modalEditTitle');
+            if (lblSubmitEventText) lblSubmitEventText.textContent = t('btnUpdateEvent');
+
+            inputEventTitle.value = activeDetailEvent.summary || '';
+            inputEventLocation.value = activeDetailEvent.location || '';
+            // Convert HTML to human-readable plain text if needed
+            inputEventDescription.value = htmlToPlainText(activeDetailEvent.description || '');
+            autoResizeDescriptionTextarea();
+            checkboxAllDay.checked = Boolean(activeDetailEvent.isAllDay);
+
+            const pad = n => String(n).padStart(2, '0');
+            const formatLocalDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+            const formatLocalDateTime = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+            const startD = new Date(activeDetailEvent.start);
+            const endD = new Date(activeDetailEvent.end);
+
+            if (activeDetailEvent.isAllDay) {
+                inputEventStart.type = 'date';
+                inputEventEnd.type = 'date';
+                inputEventStart.value = formatLocalDate(startD);
+                // Google all-day end dates are exclusive; adjust for 1-day events display
+                const adjEnd = new Date(endD.getTime() - 24 * 60 * 60 * 1000);
+                inputEventEnd.value = adjEnd >= startD ? formatLocalDate(adjEnd) : formatLocalDate(startD);
+                inputEventEnd.min = inputEventStart.value;
+            } else {
+                inputEventStart.type = 'datetime-local';
+                inputEventEnd.type = 'datetime-local';
+                inputEventStart.value = formatLocalDateTime(startD);
+                inputEventEnd.value = formatLocalDateTime(endD);
+                inputEventEnd.min = inputEventStart.value;
+            }
+
+            // Load calendars into dropdown and pre-select current calendar
+            try {
+                const listRes = await window.calendarWidgetAPI.calendar.getCalendarList();
+                if (listRes && listRes.calendars) {
+                    let optionsHtml = '';
+                    listRes.calendars.forEach(c => {
+                        const primarySuffix = c.primary ? t('primarySuffix') : '';
+                        const isSelected = c.id === activeDetailEvent.calendarId ? 'selected' : '';
+                        const shortName = formatCalendarDropdownName(c.summary);
+                        const safeTitle = (c.summary || '').replace(/"/g, '&quot;');
+                        optionsHtml += `<option value="${c.id}" ${isSelected} title="${safeTitle}">${shortName}${primarySuffix}</option>`;
+                    });
+                    selectTargetCalendar.innerHTML = optionsHtml;
+                }
+            } catch {}
+
+            addEventModal.classList.add('active');
+            const card = addEventModal.querySelector('.modal-card');
+            if (card) card.scrollTop = 0;
+            const widgetApp = document.getElementById('widgetApp');
+            if (widgetApp) {
+                widgetApp.scrollTop = 0;
+                widgetApp.scrollLeft = 0;
+            }
+            window.scrollTo(0, 0);
+            setTimeout(() => {
+                inputEventTitle.focus({ preventScroll: true });
+                autoResizeDescriptionTextarea();
+            }, 180);
+        });
+    }
 
     // Smart Temporal Validation & Auto Offset on Start Time Change
     inputEventStart.addEventListener('change', () => {
@@ -1974,8 +2549,11 @@
             }
         }
 
+        const mode = inputEventMode ? inputEventMode.value : 'create';
+        const eventId = inputEventId ? inputEventId.value : null;
+
         const payload = {
-            calendarId: selectTargetCalendar.value || 'primary',
+            calendarId: selectTargetCalendar.value || (activeDetailEvent ? activeDetailEvent.calendarId : 'primary'),
             summary: inputEventTitle.value.trim(),
             startDateTime: startVal,
             endDateTime: endVal,
@@ -1985,22 +2563,33 @@
         };
 
         const btn = document.getElementById('btnSubmitEvent');
+        const btnTextSpan = btn ? btn.querySelector('span') : null;
         try {
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = t('btnSubmitting');
+                if (btnTextSpan) btnTextSpan.textContent = mode === 'edit' ? t('btnUpdating') : t('btnSubmitting');
             }
 
-            await window.calendarWidgetAPI.calendar.createQuickEvent(payload);
-            addEventModal.classList.remove('active');
-            showToast(t('toastEventSaved'), 'success');
+            if (mode === 'edit' && eventId) {
+                await window.calendarWidgetAPI.calendar.updateEvent({
+                    ...payload,
+                    eventId
+                });
+                addEventModal.classList.remove('active');
+                showToast(t('toastEventUpdated'), 'success');
+            } else {
+                await window.calendarWidgetAPI.calendar.createQuickEvent(payload);
+                addEventModal.classList.remove('active');
+                showToast(t('toastEventSaved'), 'success');
+            }
             await refreshEvents();
         } catch (err) {
-            showToast(t('toastEventSaveFailed', err.message), 'error');
+            const failMsg = mode === 'edit' ? t('toastEventUpdateFailed', err.message) : t('toastEventSaveFailed', err.message);
+            showToast(failMsg, 'error');
         } finally {
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = t('btnSubmitEvent');
+                if (btnTextSpan) btnTextSpan.textContent = mode === 'edit' ? t('btnUpdateEvent') : t('btnSubmitEvent');
             }
         }
     });
@@ -2009,8 +2598,7 @@
     async function refreshEvents() {
         const icon = btnRefresh.querySelector('.icon-refresh');
         if (icon) icon.classList.add('spinning');
-        statusDot.className = 'status-dot syncing';
-        statusLabel.textContent = t('syncing');
+        setSyncStatus('syncing');
 
         // If timeline is completely blank (e.g. initial start), render skeleton
         if (allEvents.length === 0 && !eventsTimeline.querySelector('.skeleton-timeline')) {
@@ -2021,16 +2609,14 @@
             const res = await window.calendarWidgetAPI.calendar.refreshEvents();
             if (!res.authenticated) {
                 authOverlay.classList.remove('hidden');
-                statusDot.className = 'status-dot offline';
-                statusLabel.textContent = t('notLoggedIn');
+                setSyncStatus('notLoggedIn');
                 return;
             }
 
             authOverlay.classList.add('hidden');
             allEvents = res.events || [];
 
-            statusDot.className = res.fromCache ? 'status-dot offline' : 'status-dot';
-            statusLabel.textContent = res.fromCache ? t('offlineCache') : t('synced');
+            setSyncStatus(res.fromCache ? 'offlineCache' : 'synced');
 
             if (res.fromCache) {
                 showToast(t('toastOfflineCache'), 'info', 2500);
@@ -2043,8 +2629,7 @@
             }
         } catch (error) {
             console.error('Error refreshing events:', error);
-            statusDot.className = 'status-dot offline';
-            statusLabel.textContent = t('syncFailed');
+            setSyncStatus('syncFailed');
 
             if (allEvents.length === 0) {
                 renderTimelineError(t('errorAgendaDesc'));

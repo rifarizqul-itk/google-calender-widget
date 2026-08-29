@@ -232,10 +232,13 @@ class AuthService {
                             if (error) {
                                 res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
                                 res.end(`
-                                    <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #12141d; color: #ff5e5e;">
-                                        <h2>❌ Login Dibatalkan atau Gagal</h2>
-                                        <p>${error}</p>
-                                        <p>Silakan tutup tab ini dan coba lagi dari widget.</p>
+                                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 60px 24px; background: #0f172a; color: #f8fafc; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239,68,68,0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #ef4444;">
+                                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                        </div>
+                                        <h2 style="color: #ef4444; margin: 0 0 10px; font-size: 22px; font-weight: 700;">Login Dibatalkan atau Gagal</h2>
+                                        <p style="color: #94a3b8; font-size: 14px; margin: 0 0 16px;">${error}</p>
+                                        <p style="color: #64748b; font-size: 13px; margin: 0;">Silakan tutup tab ini dan coba lagi dari desktop widget.</p>
                                     </div>
                                 `);
                                 cleanupServer();
@@ -253,10 +256,13 @@ class AuthService {
 
                                 res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
                                 res.end(`
-                                    <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #0f172a; color: #f8fafc;">
-                                        <h1 style="color: #38bdf8;">✨ Login Berhasil!</h1>
-                                        <p style="font-size: 16px; color: #94a3b8;">Google Calendar kamu sekarang sudah terhubung dengan Desktop Widget.</p>
-                                        <p style="font-size: 14px; margin-top: 20px;">Silakan tutup tab browser ini dan kembali ke desktop kamu.</p>
+                                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 60px 24px; background: #0f172a; color: #f8fafc; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(16,185,129,0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #10b981;">
+                                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                        </div>
+                                        <h1 style="color: #38bdf8; margin: 0 0 10px; font-size: 24px; font-weight: 700;">Login Berhasil!</h1>
+                                        <p style="font-size: 15px; color: #94a3b8; margin: 0 0 16px; max-width: 380px; line-height: 1.5;">Google Calendar kamu sekarang sudah terhubung dengan Desktop Widget.</p>
+                                        <p style="font-size: 13px; color: #64748b; margin: 0;">Silakan tutup tab browser ini dan kembali ke desktop kamu.</p>
                                     </div>
                                 `);
 

@@ -3,6 +3,7 @@
 /build
 /dist
 skills-guide/
+.agents/
 
 # Logs and Crash Dumps
 logs/

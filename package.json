@@ -1,6 +1,6 @@
 {
   "name": "google-calender-widget",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "main": "index.js",
   "description": "An unofficial google calendar desktop widget for Windows, Mac and Linux",
   "author": "rifarizqul-itk <https://github.com/rifarizqul-itk>",

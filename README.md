@@ -20,15 +20,17 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 ### Key Capabilities
 
-- **Dual View Modes**: Switch between a chronological Agenda timeline with relative day groupings and a Mini Month interactive grid.
+- **Dual View Modes**: Switch between a chronological Agenda timeline (focused on present & upcoming events) and an interactive Month Calendar with historical schedule browsing.
+- **Full In-App Event Editing**: Update title, timing, all-day toggle, location, and description with Google Calendar API v3 patch updates.
+- **Historical Schedule Viewing**: Browse past events seamlessly on the Calendar tab with color indicator dots and subtle "Past / Selesai" status badges.
 - **Smart Color & Contrast Engine**: Preserves your Google Calendar badge colors while applying ITU-R BT.709 relative luminance adjustments for crisp contrast across light and dark themes.
+- **Auto-Expanding Description Field**: Multi-line editor that auto-expands with content up to 180px with sleek custom scrollbars and automatic HTML-to-plain text conversion.
+- **Intelligent URL & Name Truncation**: Prevents wide calendar titles and webcal feed URLs from breaking native dropdown bounds.
 - **Multilingual Support (EN / ID)**: Instant language switching between English and Bahasa Indonesia with a single header click or via the Settings menu, complete with localized date/time formatting and persistent preferences.
-- **Live Next-Event Ticker**: Header banner with live countdown timers that automatically pauses when the widget is minimized or hidden to maintain zero background CPU usage.
+- **Live Next-Event Ticker**: Header banner with live countdown timers and dynamic "UPCOMING / RUNNING" status badges.
 - **Direct Google Meet Launcher**: One-click join buttons for video conferences and meeting links extracted directly from Google Calendar event payloads.
-- **In-App Quick Event Management**: Create new timed or all-day events and delete existing entries with in-app confirmation dialogs.
 - **Multi-Calendar Filtering**: Toggle visibility for individual Google calendars (primary, work, shared, holiday feeds) with real-time preference persistence.
-- **Dynamic Domain Formatting**: Extracts and displays clean hostnames for long calendar names or organizer URLs, complete with one-click copy buttons for raw links.
-- **Zero AI Slop Iconography**: Pure hairline SVG vector icons with no emoji decorations.
+- **OS Power & Memory Optimization**: Background Chromium throttling and `powerMonitor` hooks for near-zero idle CPU when minimized or during OS sleep.
 - **Fluid Resizing & State Persistence**: 8-directional window resizing with bounds saved across app restarts.
 - **Full Account Lifecycle**: OAuth 2.0 loopback login with a 5-minute timeout guard and a clean disconnect option that clears cached tokens and events from disk.
 
