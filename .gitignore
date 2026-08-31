@@ -12,6 +12,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Personal / Private Documents
+ARCHITECTURE_SPECIFICATION.md
+
 # User Data & Sensitive Tokens
 google_tokens.json
 calendar_cache.json
