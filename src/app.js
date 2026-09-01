@@ -6,6 +6,10 @@ const { authService } = require('./services/authService');
 const { calendarService } = require('./services/calendarService');
 const { createTray } = require('./services/trayManager');
 const { logger } = require('./utils/logger');
+const { detectActiveSemesterCalendar, calculateWeekNumber, generateWeekSchedule, formatLocalDate, SEMESTER_TOTAL_WEEKS } = require('./services/academicService');
+const { getSemesterStartDate, saveSemesterStartDate, getSemesterTotalWeeks, saveSemesterTotalWeeks } = require('./services/preferences');
+
+
 
 // Lightweight Chromium & V8 Memory Optimizations for Ambient Desktop Widget
 app.commandLine.appendSwitch('js-flags', '--max-old-space-size=32 --lite-mode --expose-gc');
@@ -205,11 +209,145 @@ function registerIpcHandlers() {
         }
     }
 
+    // Academic (Semester Week) Handlers
+    // Cache: avoid extra API calls on every tab switch
+    let _academicCache = null;
+    let _academicCacheTs = 0;
+    const ACADEMIC_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+    ipcMain.handle('academic:get-week-info', async () => {
+        const now = Date.now();
+        if (_academicCache && (now - _academicCacheTs) < ACADEMIC_CACHE_TTL_MS) {
+            return _academicCache;
+        }
+
+        try {
+            // 1. Load calendar list to detect active semester calendar
+            const { calendars, selectedIds } = await calendarService.getCalendarList();
+            const detected = detectActiveSemesterCalendar(calendars, selectedIds);
+
+            // 2. Determine semester start date (manual override > auto-detect)
+            let startDateStr = getSemesterStartDate() || null;
+            let startDateSource = 'manual';
+
+            if (!startDateStr && detected.calendar) {
+                // Auto-detect: fetch events from active semester calendar,
+                // use the earliest event's start date as Week 1
+                try {
+                    const { calendar: getCalendarClient } = require('googleapis/build/src/apis/calendar');
+                    const auth = await authService.getAuthenticatedClient();
+                    const gcal = getCalendarClient({ version: 'v3', auth });
+
+                    const res = await gcal.events.list({
+                        calendarId: detected.calendar.id,
+                        maxResults: 1,
+                        singleEvents: true,
+                        orderBy: 'startTime',
+                        timeMin: new Date(new Date().getFullYear() - 1, 0, 1).toISOString()
+                    });
+
+                    const items = res.data.items || [];
+                    if (items.length > 0) {
+                        const firstEvent = items[0];
+                        let rawStart = null;
+                        if (firstEvent.start) {
+                            if (firstEvent.start.date) {
+                                rawStart = firstEvent.start.date;
+                            } else if (firstEvent.start.dateTime) {
+                                const d = new Date(firstEvent.start.dateTime);
+                                if (!isNaN(d.getTime())) {
+                                    rawStart = formatLocalDate(d);
+                                }
+                            }
+                        }
+                        if (rawStart) {
+                            startDateStr = rawStart;
+                            startDateSource = 'auto';
+                        }
+                    }
+                } catch (fetchErr) {
+                    logger.warn('Academic', `Auto-detect event fetch failed: ${fetchErr.message}`);
+                }
+
+            }
+
+            const savedTotalWeeks = getSemesterTotalWeeks();
+            const totalWeeks = (typeof savedTotalWeeks === 'number' && savedTotalWeeks > 0)
+                ? savedTotalWeeks
+                : SEMESTER_TOTAL_WEEKS;
+
+            const weekNumber = startDateStr ? calculateWeekNumber(startDateStr) : null;
+            const schedule = startDateStr ? generateWeekSchedule(startDateStr, totalWeeks) : [];
+
+            _academicCache = {
+                detected: {
+                    calendarId: detected.calendar ? detected.calendar.id : null,
+                    calendarName: detected.calendar ? detected.calendar.summary : null,
+                    semesterNumber: detected.semesterNumber,
+                    academicYear: detected.academicYear
+                },
+                startDateStr,
+                startDateSource,
+                weekNumber,
+                totalWeeks,
+                schedule: schedule.map(w => ({
+                    weekNum: w.weekNum,
+                    startDate: w.startDateStr || formatLocalDate(w.startDate),
+                    endDate: w.endDateStr || formatLocalDate(w.endDate),
+                    isCurrent: w.isCurrent,
+                    isPast: w.isPast
+                }))
+            };
+            _academicCacheTs = now;
+
+            logger.info('Academic', `Week info: Sem ${detected.semesterNumber || '?'}, Week ${weekNumber || '?'}, totalWeeks=${totalWeeks}, source=${startDateSource}`);
+            return _academicCache;
+        } catch (err) {
+            logger.error('Academic', `get-week-info error: ${err.message}`);
+            const savedTotalWeeks = getSemesterTotalWeeks();
+            const fallbackWeeks = (typeof savedTotalWeeks === 'number' && savedTotalWeeks > 0) ? savedTotalWeeks : SEMESTER_TOTAL_WEEKS;
+            return { detected: null, startDateStr: null, weekNumber: null, totalWeeks: fallbackWeeks, schedule: [], error: err.message };
+        }
+    });
+
+    ipcMain.handle('academic:save-semester-start', async (_event, dateStr) => {
+        // Accept null (clear override) or valid YYYY-MM-DD
+        if (dateStr !== null && (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr))) {
+            throw new Error('Invalid date format. Expected YYYY-MM-DD or null.');
+        }
+        saveSemesterStartDate(dateStr);
+        // Invalidate cache so next fetch uses updated preference
+        _academicCache = null;
+        _academicCacheTs = 0;
+        logger.info('Academic', `Manual semester start date set to: ${dateStr}`);
+        return { success: true, semesterStartDate: dateStr };
+    });
+
+    ipcMain.handle('academic:save-semester-total-weeks', async (_event, weeks) => {
+        // Accept null (clear override) or valid integer 1..30
+        if (weeks !== null) {
+            const parsed = Number(weeks);
+            if (!Number.isInteger(parsed) || parsed < 1 || parsed > 30) {
+                throw new Error('Invalid total weeks. Expected an integer between 1 and 30, or null.');
+            }
+            saveSemesterTotalWeeks(parsed);
+        } else {
+            saveSemesterTotalWeeks(null);
+        }
+        // Invalidate cache so next fetch uses updated preference
+        _academicCache = null;
+        _academicCacheTs = 0;
+        logger.info('Academic', `Semester total weeks set to: ${weeks}`);
+        return { success: true, semesterTotalWeeks: weeks };
+    });
+
+
     // System Actions
     ipcMain.on('system:open-external', (_event, url) => {
         safeOpenExternal(url);
     });
 }
+
 
 const BASE_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_SYNC_INTERVAL_MS = 30 * 60 * 1000;  // 30 minutes max backoff

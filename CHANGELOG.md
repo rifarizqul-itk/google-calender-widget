@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.5] - 2026-09-01
+
+### Added
+- **Academic Semester Week Tracker**:
+  - Automatic detection of active semester calendars matching the pattern `"SEMESTER <N> - <AcademicYear>"`.
+  - Dedicated **Semester Tab** displaying the current week number, academic year, and a structured list of all 16 (or custom N) semester weeks with active-week highlights.
+  - Glanceable **Semester Week Chip** in the header banner for instant ambient week tracking.
+  - Configurable settings for manual **Week 1 Start Date override** and **Total Semester Weeks** (defaulting to 16, supporting custom values such as 17 for specific rector/academic decrees).
+  - 10-minute in-memory caching with graceful fallbacks.
+- **Instant (0ms) Add/Edit Event Modal Launch**:
+  - Eliminated synchronous network blocking on modal open by caching Google Calendar list in main and renderer processes.
+- **Clean Timeline & Enhanced Hover UX**:
+  - Removed repetitive past chips and transparency dots from event cards to prevent visual clutter.
+  - Streamlined recurring event indicator to a clean icon-only pill with native hover tooltip (`"Acara Berulang"` / `"Recurring Event"`).
+  - Added native hover tooltip to past event cards (`"Acara telah selesai"` / `"Event has ended"`).
+
+### Fixed
+- **Local Date Serialization Bug**: Fixed UTC timezone offset drift in ISO string serialization (`.toISOString()`), ensuring semester start dates and week boundaries accurately reflect local timezone calendar dates (WIB/WITA/WIT).
+
+---
+
 ## [2.0.0] - 2026-08-26
 
 ### Major Architectural Overhaul & First Official Next-Gen Release

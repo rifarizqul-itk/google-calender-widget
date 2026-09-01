@@ -12,6 +12,7 @@
     let isPinned = false;
     let countdownIntervalId = null;
     let activeDetailEvent = null;
+    let semesterWeekInfo = null; // Cached result from academic:get-week-info
 
     // DOM Elements
     const authOverlay = document.getElementById('authOverlay');
@@ -46,6 +47,7 @@
     const tabButtons = document.querySelectorAll('.tab-btn');
     const viewAgenda = document.getElementById('viewAgenda');
     const viewMonth = document.getElementById('viewMonth');
+    const viewSemester = document.getElementById('viewSemester');
     const eventsTimeline = document.getElementById('eventsTimeline');
 
     // Calendar Elements
@@ -151,6 +153,30 @@
             
             tabAgenda: 'Agenda',
             tabMonth: 'Kalender',
+            tabSemester: 'Semester',
+
+            semesterWeekN: (n, total) => `Minggu ke-${n} dari ${total}`,
+            semesterWeekNShort: (n) => `Minggu ${n}`,
+            semesterNoCalendar: 'Tidak ada kalender semester aktif',
+            semesterNoCalendarDesc: 'Aktifkan kalender dengan nama "SEMESTER N - TahunAjaran" di pengaturan kalender kamu.',
+            semesterNotStarted: 'Semester belum dimulai',
+            semesterNoEvents: 'Kalender semester ditemukan, tapi belum ada event. Tambahkan event pertama ke set tanggal mulai.',
+            semesterCurrentBadge: 'SEKARANG',
+            semesterWeekRange: (start, end) => `${start} – ${end}`,
+            semesterStartLabel: 'Tanggal Mulai Minggu 1 (Override Manual)',
+            semesterStartHintAuto: (calName) => `Terdeteksi otomatis dari kalender: ${calName}`,
+            semesterStartHintManual: 'Mode manual aktif — tanggal ini menimpa deteksi otomatis',
+            semesterStartHintNone: 'Isi untuk menimpa deteksi otomatis. Biarkan kosong untuk otomatis.',
+            semesterSaved: 'Tanggal mulai semester disimpan!',
+            semesterCleared: 'Override manual dihapus. Beralih ke deteksi otomatis.',
+            semesterSaveFailed: (err) => `Gagal menyimpan: ${err}`,
+            semesterTotalWeeksLabel: 'Total Minggu Perkuliahan',
+            semesterTotalWeeksPlaceholder: '16 (Otomatis)',
+            semesterTotalWeeksHint: 'Kosongkan untuk otomatis 16 minggu. Isi jika Keputusan Rektor menetapkan jumlah minggu berbeda (misal 17).',
+            semesterTotalWeeksSaved: 'Total minggu perkuliahan disimpan!',
+            semesterTotalWeeksCleared: 'Total minggu di-reset ke default otomatis (16).',
+            semesterTotalWeeksSaveFailed: (err) => `Gagal menyimpan total minggu: ${err}`,
+
             
             relToday: 'Hari Ini',
             relTomorrow: 'Besok',
@@ -355,6 +381,30 @@
             
             tabAgenda: 'Agenda',
             tabMonth: 'Calendar',
+            tabSemester: 'Semester',
+
+            semesterWeekN: (n, total) => `Week ${n} of ${total}`,
+            semesterWeekNShort: (n) => `Week ${n}`,
+            semesterNoCalendar: 'No active semester calendar',
+            semesterNoCalendarDesc: 'Enable a calendar named "SEMESTER N - AcademicYear" in your calendar settings.',
+            semesterNotStarted: 'Semester not yet started',
+            semesterNoEvents: 'Semester calendar found, but no events yet. Add an event to set the start date.',
+            semesterCurrentBadge: 'NOW',
+            semesterWeekRange: (start, end) => `${start} – ${end}`,
+            semesterStartLabel: 'Week 1 Start Date',
+            semesterStartHintAuto: (calName) => `Auto-detected from calendar: ${calName}`,
+            semesterStartHintManual: 'Manual mode active — this date overrides auto-detect',
+            semesterStartHintNone: 'Fill in to override auto-detect. Leave empty for automatic.',
+            semesterSaved: 'Semester start date saved!',
+            semesterCleared: 'Manual override cleared. Switching to auto-detect.',
+            semesterSaveFailed: (err) => `Save failed: ${err}`,
+            semesterTotalWeeksLabel: 'Total Semester Weeks',
+            semesterTotalWeeksPlaceholder: '16 (Automatic)',
+            semesterTotalWeeksHint: 'Leave empty for automatic 16 weeks. Fill in if academic regulation specifies different weeks (e.g. 17).',
+            semesterTotalWeeksSaved: 'Total semester weeks saved!',
+            semesterTotalWeeksCleared: 'Total weeks reset to default (16).',
+            semesterTotalWeeksSaveFailed: (err) => `Failed to save total weeks: ${err}`,
+
             
             relToday: 'Today',
             relTomorrow: 'Tomorrow',
@@ -598,7 +648,19 @@
         if (tabSpans.length >= 2) {
             tabSpans[0].textContent = t('tabAgenda');
             tabSpans[1].textContent = t('tabMonth');
+            if (tabSpans[2]) tabSpans[2].textContent = t('tabSemester');
         }
+
+        // Update Semester Settings label if visible
+        const lblSemesterStartDate = document.getElementById('lblSemesterStartDate');
+        if (lblSemesterStartDate) lblSemesterStartDate.textContent = t('semesterStartLabel');
+        const lblSemesterTotalWeeks = document.getElementById('lblSemesterTotalWeeks');
+        if (lblSemesterTotalWeeks) lblSemesterTotalWeeks.textContent = t('semesterTotalWeeksLabel');
+        const inputSemesterTotalWeeks = document.getElementById('inputSemesterTotalWeeks');
+        if (inputSemesterTotalWeeks) inputSemesterTotalWeeks.setAttribute('placeholder', t('semesterTotalWeeksPlaceholder'));
+        const semesterTotalWeeksHint = document.getElementById('semesterTotalWeeksHint');
+        if (semesterTotalWeeksHint) semesterTotalWeeksHint.textContent = t('semesterTotalWeeksHint');
+
 
         // Update Banner (with dynamic SEGERA/BERJALAN badge)
         updateNextEventBanner();
@@ -898,9 +960,16 @@
             if (targetTab === 'agenda') {
                 viewAgenda.classList.add('active');
                 viewMonth.classList.remove('active');
+                if (viewSemester) viewSemester.classList.remove('active');
+            } else if (targetTab === 'semester') {
+                if (viewSemester) viewSemester.classList.add('active');
+                viewAgenda.classList.remove('active');
+                viewMonth.classList.remove('active');
+                loadSemesterTab();
             } else {
                 viewMonth.classList.add('active');
                 viewAgenda.classList.remove('active');
+                if (viewSemester) viewSemester.classList.remove('active');
                 renderMiniCalendar();
             }
         });
@@ -1869,11 +1938,9 @@
                     miniBadges += `<span class="event-mini-badge" title="${t('badgeAttachmentsTitle', ev.attachments.length)}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> ${ev.attachments.length}</span>`;
                 }
                 if (ev.recurring) {
-                    miniBadges += `<span class="event-mini-badge" title="${t('badgeRecurringTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>`;
+                    miniBadges += `<span class="event-mini-badge icon-only" title="${t('badgeRecurringTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>`;
                 }
-                if (ev.transparency === 'transparent') {
-                    miniBadges += `<span class="event-mini-badge free-avail" title="${t('badgeFreeTitle')}"><svg viewBox="0 0 24 24" width="8" height="8" fill="currentColor"><circle cx="12" cy="12" r="9"/></svg></span>`;
-                }
+
 
                 html += `
                     <div class="event-card" data-event-idx="${idx}" data-date-key="${dateKey}" style="--card-index: ${overallCardIdx}; --event-accent: ${colorInfo.accent};">
@@ -2047,24 +2114,17 @@
             const calBadge = calParse.display && calParse.display !== 'Primary' ? `
                 <span class="event-cal-badge" title="${calParse.raw}" style="--event-badge-bg: ${colorInfo.badgeBg}; --event-badge-text: ${colorInfo.badgeText}; --event-badge-border: ${colorInfo.badgeBorder}; font-size: 9px; padding: 1px 6px;">${calParse.display}</span>
             ` : '';
-            const pastBadge = isPast ? `
-                <span class="past-event-chip" title="${t('pastEventBadgeTitle')}">
-                    <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    <span>${t('pastEventBadge')}</span>
-                </span>
-            ` : '';
+            const cardTitle = isPast ? t('pastEventBadgeTitle') : '';
 
             html += `
-                <div class="event-card day-event-card ${isPast ? 'past-event' : ''}" style="margin-bottom: 6px; --card-index: ${idx + 1}; --event-accent: ${colorInfo.accent};" data-idx="${idx}">
+                <div class="event-card day-event-card ${isPast ? 'past-event' : ''}" style="margin-bottom: 6px; --card-index: ${idx + 1}; --event-accent: ${colorInfo.accent};" data-idx="${idx}" ${cardTitle ? `title="${cardTitle}"` : ''}>
                     <div class="event-color-strip" style="background-color: ${colorInfo.accent};"></div>
                     <div class="event-body">
                         <div class="event-title-row">
                             <span class="event-title" style="font-size: 12px;">${ev.summary}</span>
-                            ${pastBadge}
                             ${calBadge}
                         </div>
+
                         <div class="event-time-row" style="font-size: 11px;">
                             <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="time-clock-icon">
                                 <circle cx="12" cy="12" r="10"/>
@@ -2345,8 +2405,48 @@
         inputEventDescription.addEventListener('input', autoResizeDescriptionTextarea);
     }
 
+    // Cached calendars for instant (0ms) dropdown rendering in Add/Edit Event modal
+    let cachedCalendarDropdownList = [];
+
+    function renderCalendarDropdownOptions(calendars, selectedId = null) {
+        if (!selectTargetCalendar || !Array.isArray(calendars) || calendars.length === 0) return;
+        let optionsHtml = '';
+        calendars.forEach(c => {
+            const primarySuffix = c.primary ? t('primarySuffix') : '';
+            const isSelected = selectedId ? (c.id === selectedId ? 'selected' : '') : '';
+            const shortName = formatCalendarDropdownName(c.summary);
+            const safeTitle = (c.summary || '').replace(/"/g, '&quot;');
+            optionsHtml += `<option value="${c.id}" ${isSelected} title="${safeTitle}">${shortName}${primarySuffix}</option>`;
+        });
+        selectTargetCalendar.innerHTML = optionsHtml;
+    }
+
+    async function loadCalendarDropdownOptions(selectedId = null) {
+        if (cachedCalendarDropdownList.length > 0) {
+            renderCalendarDropdownOptions(cachedCalendarDropdownList, selectedId);
+        }
+        try {
+            const listRes = await window.calendarWidgetAPI.calendar.getCalendarList();
+            if (listRes && listRes.calendars && listRes.calendars.length > 0) {
+                cachedCalendarDropdownList = listRes.calendars;
+                renderCalendarDropdownOptions(cachedCalendarDropdownList, selectedId);
+            }
+        } catch {}
+    }
+
     // Quick Add & Edit Event Modal
-    btnAddEvent.addEventListener('click', async () => {
+    btnAddEvent.addEventListener('click', () => {
+        // 1. Open modal immediately (0ms delay)
+        addEventModal.classList.add('active');
+        const card = addEventModal.querySelector('.modal-card');
+        if (card) card.scrollTop = 0;
+        const widgetApp = document.getElementById('widgetApp');
+        if (widgetApp) {
+            widgetApp.scrollTop = 0;
+            widgetApp.scrollLeft = 0;
+        }
+        window.scrollTo(0, 0);
+
         const now = new Date();
         const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
 
@@ -2371,40 +2471,30 @@
         inputEventDescription.value = '';
         autoResizeDescriptionTextarea();
 
-        // Load calendars into dropdown with intelligent name truncation
-        try {
-            const listRes = await window.calendarWidgetAPI.calendar.getCalendarList();
-            if (listRes && listRes.calendars) {
-                let optionsHtml = '';
-                listRes.calendars.forEach(c => {
-                    const primarySuffix = c.primary ? t('primarySuffix') : '';
-                    const shortName = formatCalendarDropdownName(c.summary);
-                    const safeTitle = (c.summary || '').replace(/"/g, '&quot;');
-                    optionsHtml += `<option value="${c.id}" title="${safeTitle}">${shortName}${primarySuffix}</option>`;
-                });
-                selectTargetCalendar.innerHTML = optionsHtml;
-            }
-        } catch {}
+        // 2. Populate dropdown instantly from cache, refresh in background
+        loadCalendarDropdownOptions();
 
-        addEventModal.classList.add('active');
-        const card = addEventModal.querySelector('.modal-card');
-        if (card) card.scrollTop = 0;
-        const widgetApp = document.getElementById('widgetApp');
-        if (widgetApp) {
-            widgetApp.scrollTop = 0;
-            widgetApp.scrollLeft = 0;
-        }
-        window.scrollTo(0, 0);
         setTimeout(() => {
             inputEventTitle.focus({ preventScroll: true });
-        }, 180);
+        }, 120);
     });
 
     // Wire In-App Edit Button from Event Details
     if (btnDetailEdit) {
-        btnDetailEdit.addEventListener('click', async () => {
+        btnDetailEdit.addEventListener('click', () => {
             if (!activeDetailEvent) return;
             eventDetailsModal.classList.remove('active');
+
+            // 1. Open modal immediately (0ms delay)
+            addEventModal.classList.add('active');
+            const card = addEventModal.querySelector('.modal-card');
+            if (card) card.scrollTop = 0;
+            const widgetApp = document.getElementById('widgetApp');
+            if (widgetApp) {
+                widgetApp.scrollTop = 0;
+                widgetApp.scrollLeft = 0;
+            }
+            window.scrollTo(0, 0);
 
             if (inputEventMode) inputEventMode.value = 'edit';
             if (inputEventId) inputEventId.value = activeDetailEvent.id;
@@ -2442,37 +2532,16 @@
                 inputEventEnd.min = inputEventStart.value;
             }
 
-            // Load calendars into dropdown and pre-select current calendar
-            try {
-                const listRes = await window.calendarWidgetAPI.calendar.getCalendarList();
-                if (listRes && listRes.calendars) {
-                    let optionsHtml = '';
-                    listRes.calendars.forEach(c => {
-                        const primarySuffix = c.primary ? t('primarySuffix') : '';
-                        const isSelected = c.id === activeDetailEvent.calendarId ? 'selected' : '';
-                        const shortName = formatCalendarDropdownName(c.summary);
-                        const safeTitle = (c.summary || '').replace(/"/g, '&quot;');
-                        optionsHtml += `<option value="${c.id}" ${isSelected} title="${safeTitle}">${shortName}${primarySuffix}</option>`;
-                    });
-                    selectTargetCalendar.innerHTML = optionsHtml;
-                }
-            } catch {}
+            // 2. Populate dropdown instantly from cache with current calendar selected
+            loadCalendarDropdownOptions(activeDetailEvent.calendarId);
 
-            addEventModal.classList.add('active');
-            const card = addEventModal.querySelector('.modal-card');
-            if (card) card.scrollTop = 0;
-            const widgetApp = document.getElementById('widgetApp');
-            if (widgetApp) {
-                widgetApp.scrollTop = 0;
-                widgetApp.scrollLeft = 0;
-            }
-            window.scrollTo(0, 0);
             setTimeout(() => {
                 inputEventTitle.focus({ preventScroll: true });
                 autoResizeDescriptionTextarea();
-            }, 180);
+            }, 120);
         });
     }
+
 
     // Smart Temporal Validation & Auto Offset on Start Time Change
     inputEventStart.addEventListener('change', () => {
@@ -2593,6 +2662,252 @@
             }
         }
     });
+    // ==========================================================================
+    // Semester Week Tracker — Rendering & Logic
+    // ==========================================================================
+
+    /**
+     * Format a YYYY-MM-DD string into a localised short date like "1 Sep" or "Sep 1".
+     * @param {string} isoDate
+     * @returns {string}
+     */
+    function _formatShortDate(isoDate) {
+        if (!isoDate) return '';
+        const [y, m, d] = isoDate.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        const locale = currentLang === 'id' ? 'id-ID' : 'en-US';
+        return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+    }
+
+    /**
+     * Update the mini semester week chip in the banner.
+     * Shows "Minggu 5" / "Week 5" when semester info is available.
+     */
+    function updateSemesterWeekChip() {
+        const chip = document.getElementById('semesterWeekChip');
+        const chipLabel = document.getElementById('semesterWeekChipLabel');
+        if (!chip || !chipLabel) return;
+
+        if (semesterWeekInfo && semesterWeekInfo.weekNumber && semesterWeekInfo.weekNumber > 0) {
+            chipLabel.textContent = t('semesterWeekNShort', semesterWeekInfo.weekNumber);
+            chip.style.display = 'inline-flex';
+        } else {
+            chip.style.display = 'none';
+        }
+    }
+
+    /**
+     * Load semester info from IPC and render the Semester tab content.
+     * Caches the result in `semesterWeekInfo` state.
+     */
+    async function loadSemesterTab() {
+        const container = document.getElementById('semesterHeaderInfo');
+        const list = document.getElementById('semesterWeeksList');
+        if (!container || !list) return;
+
+        // Show skeleton while loading
+        container.innerHTML = '<div class="semester-state-empty"><span style="opacity:0.5">Loading...</span></div>';
+        list.innerHTML = '';
+
+        try {
+            const info = await window.calendarWidgetAPI.academic.getWeekInfo();
+            semesterWeekInfo = info;
+
+            _renderSemesterHeader(container, info);
+            _renderSemesterWeeks(list, info);
+            _populateSemesterSettingsRow(info);
+            updateSemesterWeekChip();
+        } catch (err) {
+            container.innerHTML = `<div class="semester-state-empty"><strong>${t('semesterNoCalendar')}</strong>${err.message || ''}</div>`;
+        }
+    }
+
+    function _renderSemesterHeader(container, info) {
+        if (!info || !info.detected || !info.detected.calendarName) {
+            // No active semester calendar
+            container.innerHTML = `
+                <div class="semester-state-empty">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                    <strong>${t('semesterNoCalendar')}</strong>
+                    <span>${t('semesterNoCalendarDesc')}</span>
+                </div>`;
+            return;
+        }
+
+        const weekNum = info.weekNumber;
+        const totalWeeks = info.totalWeeks || 16;
+        const calName = info.detected.calendarName;
+        const ayear = info.detected.academicYear || '';
+
+        let weekDisplay = '';
+        if (weekNum === null || weekNum === undefined) {
+            weekDisplay = `<span class="semester-header-week">—</span>`;
+        } else if (weekNum <= 0) {
+            weekDisplay = `<span class="semester-header-week" style="font-size:15px;font-weight:700;">${t('semesterNotStarted')}</span>`;
+        } else if (!info.startDateStr) {
+            weekDisplay = `<span class="semester-header-week" style="font-size:13px;">${t('semesterNoEvents')}</span>`;
+        } else {
+            weekDisplay = `
+                <span class="semester-header-week">${weekNum}</span>
+                <span class="semester-header-week-label">/ ${totalWeeks}</span>`;
+        }
+
+        container.innerHTML = `
+            <div class="semester-header-title">${calName}</div>
+            <div class="semester-header-sub">${ayear}</div>
+            <div style="margin-top:6px;display:flex;align-items:baseline;gap:4px;">
+                ${weekDisplay}
+            </div>`;
+    }
+
+    function _renderSemesterWeeks(list, info) {
+        list.innerHTML = '';
+
+        if (!info || !info.schedule || info.schedule.length === 0) {
+            return; // Nothing to render — header already shows state
+        }
+
+        info.schedule.forEach(week => {
+            const item = document.createElement('div');
+            item.className = 'semester-week-item' +
+                (week.isCurrent ? ' current' : '') +
+                (week.isPast && !week.isCurrent ? ' past' : '');
+
+            const startFormatted = _formatShortDate(week.startDate);
+            const endFormatted = _formatShortDate(week.endDate);
+
+            item.innerHTML = `
+                <span class="semester-week-num">${week.weekNum}</span>
+                <span class="semester-week-dates">${t('semesterWeekRange', startFormatted, endFormatted)}</span>
+                ${week.isCurrent ? `<span class="semester-week-badge">${t('semesterCurrentBadge')}</span>` : ''}`;
+
+            list.appendChild(item);
+
+            // Auto-scroll current week into view
+            if (week.isCurrent) {
+                requestAnimationFrame(() => {
+                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            }
+        });
+    }
+
+    function _populateSemesterSettingsRow(info) {
+        const input = document.getElementById('inputSemesterStartDate');
+        const hint = document.getElementById('semesterDateHint');
+        const lbl = document.getElementById('lblSemesterStartDate');
+
+        if (lbl) lbl.textContent = t('semesterStartLabel');
+
+        if (input && info) {
+            // Pre-fill with existing manual override if present
+            if (info.startDateSource === 'manual' && info.startDateStr) {
+                input.value = info.startDateStr;
+                if (hint) hint.textContent = t('semesterStartHintManual');
+            } else if (info.startDateSource === 'auto' && info.startDateStr) {
+                input.value = '';
+                if (hint) hint.textContent = t('semesterStartHintAuto', info.detected && info.detected.calendarName ? info.detected.calendarName : '');
+            } else {
+                input.value = '';
+                if (hint) hint.textContent = t('semesterStartHintNone');
+            }
+        }
+
+        const inputWeeks = document.getElementById('inputSemesterTotalWeeks');
+        const hintWeeks = document.getElementById('semesterTotalWeeksHint');
+        const lblWeeks = document.getElementById('lblSemesterTotalWeeks');
+
+        if (lblWeeks) lblWeeks.textContent = t('semesterTotalWeeksLabel');
+        if (hintWeeks) hintWeeks.textContent = t('semesterTotalWeeksHint');
+        if (inputWeeks) {
+            inputWeeks.setAttribute('placeholder', t('semesterTotalWeeksPlaceholder'));
+            if (info && info.totalWeeks && info.totalWeeks !== 16) {
+                inputWeeks.value = info.totalWeeks;
+            } else {
+                inputWeeks.value = '';
+            }
+        }
+    }
+
+    // Save button — semester manual start date
+    const btnSaveSemesterStart = document.getElementById('btnSaveSemesterStart');
+    if (btnSaveSemesterStart) {
+        btnSaveSemesterStart.addEventListener('click', async () => {
+            const input = document.getElementById('inputSemesterStartDate');
+            if (!input) return;
+            const val = input.value.trim();
+            if (!val || !/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                showToast(currentLang === 'id' ? 'Format tanggal tidak valid (YYYY-MM-DD)' : 'Invalid date format (YYYY-MM-DD)', 'error');
+                return;
+            }
+            try {
+                await window.calendarWidgetAPI.academic.saveSemesterStart(val);
+                semesterWeekInfo = null; // Invalidate local cache
+                showToast(t('semesterSaved'), 'success');
+                // Reload tab to reflect new start date
+                await loadSemesterTab();
+            } catch (err) {
+                showToast(t('semesterSaveFailed', err.message), 'error');
+            }
+        });
+    }
+
+    // Clear button — remove manual override, fall back to auto-detect
+    const btnClearSemesterStart = document.getElementById('btnClearSemesterStart');
+    if (btnClearSemesterStart) {
+        btnClearSemesterStart.addEventListener('click', async () => {
+            try {
+                await window.calendarWidgetAPI.academic.saveSemesterStart(null);
+                semesterWeekInfo = null; // Invalidate local cache
+                showToast(t('semesterCleared'), 'info');
+                // Reload tab to reflect cleared override
+                await loadSemesterTab();
+            } catch (err) {
+                showToast(t('semesterSaveFailed', err.message), 'error');
+            }
+        });
+    }
+
+    // Save button — semester total weeks override
+    const btnSaveSemesterTotalWeeks = document.getElementById('btnSaveSemesterTotalWeeks');
+    if (btnSaveSemesterTotalWeeks) {
+        btnSaveSemesterTotalWeeks.addEventListener('click', async () => {
+            const input = document.getElementById('inputSemesterTotalWeeks');
+            if (!input) return;
+            const rawVal = input.value.trim();
+            const val = Number(rawVal);
+            if (!rawVal || !Number.isInteger(val) || val < 1 || val > 30) {
+                showToast(currentLang === 'id' ? 'Total minggu harus berupa angka 1 - 30' : 'Total weeks must be a number between 1 and 30', 'error');
+                return;
+            }
+            try {
+                await window.calendarWidgetAPI.academic.saveSemesterTotalWeeks(val);
+                semesterWeekInfo = null; // Invalidate local cache
+                showToast(t('semesterTotalWeeksSaved'), 'success');
+                await loadSemesterTab();
+            } catch (err) {
+                showToast(t('semesterTotalWeeksSaveFailed', err.message), 'error');
+            }
+        });
+    }
+
+    // Reset button — clear semester total weeks override (back to 16)
+    const btnClearSemesterTotalWeeks = document.getElementById('btnClearSemesterTotalWeeks');
+    if (btnClearSemesterTotalWeeks) {
+        btnClearSemesterTotalWeeks.addEventListener('click', async () => {
+            try {
+                await window.calendarWidgetAPI.academic.saveSemesterTotalWeeks(null);
+                semesterWeekInfo = null; // Invalidate local cache
+                showToast(t('semesterTotalWeeksCleared'), 'info');
+                await loadSemesterTab();
+            } catch (err) {
+                showToast(t('semesterTotalWeeksSaveFailed', err.message), 'error');
+            }
+        });
+    }
+
 
     // Data Refreshing
     async function refreshEvents() {
@@ -2670,6 +2985,8 @@
             } else {
                 authOverlay.classList.add('hidden');
                 await refreshEvents();
+                // Load semester chip data silently in background (non-blocking)
+                loadSemesterTab().catch(() => {});
             }
 
             // Listen to IPC updates
@@ -2680,6 +2997,8 @@
                 if (viewMonth.classList.contains('active')) {
                     renderMiniCalendar();
                 }
+                // Refresh chip if semester tab was already loaded
+                if (semesterWeekInfo) updateSemesterWeekChip();
             });
         }
 

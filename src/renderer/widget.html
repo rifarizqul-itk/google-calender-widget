@@ -107,6 +107,9 @@
                         <span class="meta-separator">•</span>
                         <span class="next-event-countdown" id="nextEventCountdown">Santai sejenak</span>
                     </div>
+                    <div class="semester-week-chip" id="semesterWeekChip" style="display:none;">
+                        <span id="semesterWeekChipLabel"></span>
+                    </div>
                 </div>
                 <div class="banner-action-arrow">
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -115,6 +118,9 @@
                 </div>
             </div>
         </section>
+
+        <!-- Live Semester Week Chip (inside banner, appended to .banner-content below meta) -->
+        <!-- Rendered via JS; this is just the anchor element -->
 
         <!-- View Switcher Navigation (Floating Glass Capsule) -->
         <nav class="view-tabs" role="tablist">
@@ -137,6 +143,13 @@
                     <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
                 <span>Kalender</span>
+            </button>
+            <button class="tab-btn" data-tab="semester" role="tab" aria-selected="false" aria-controls="viewSemester" id="tabBtnSemester">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+                <span>Semester</span>
             </button>
         </nav>
 
@@ -199,6 +212,40 @@
                         <h4 class="selected-date-title" id="selectedDateTitle">Jadwal Tanggal Ini</h4>
                         <div class="day-events-list" id="dayEventsList"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Semester Week Schedule -->
+            <div class="tab-view" id="viewSemester" role="tabpanel">
+                <div class="semester-container" id="semesterContainer">
+                    <div class="semester-header" id="semesterHeaderInfo">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="semester-weeks-list" id="semesterWeeksList">
+                        <!-- Week rows populated by JS -->
+                    </div>
+                    <!-- Settings row for manual start date & total weeks override -->
+                    <div class="semester-settings-row" id="semesterSettingsRow">
+                        <div class="semester-setting-field">
+                            <label class="semester-setting-label" for="inputSemesterStartDate" id="lblSemesterStartDate">Tanggal Mulai Minggu 1 (Override Manual)</label>
+                            <div class="semester-date-row">
+                                <input type="date" id="inputSemesterStartDate" class="semester-date-input">
+                                <button type="button" class="semester-date-save-btn" id="btnSaveSemesterStart">Simpan</button>
+                                <button type="button" class="semester-date-clear-btn" id="btnClearSemesterStart">Hapus</button>
+                            </div>
+                            <span class="semester-date-hint" id="semesterDateHint"></span>
+                        </div>
+                        <div class="semester-setting-field" style="margin-top: 10px; border-top: 1px solid var(--border-hairline); padding-top: 8px;">
+                            <label class="semester-setting-label" for="inputSemesterTotalWeeks" id="lblSemesterTotalWeeks">Total Minggu Perkuliahan</label>
+                            <div class="semester-date-row">
+                                <input type="number" id="inputSemesterTotalWeeks" class="semester-date-input" min="1" max="30" placeholder="16 (Otomatis)">
+                                <button type="button" class="semester-date-save-btn" id="btnSaveSemesterTotalWeeks">Simpan</button>
+                                <button type="button" class="semester-date-clear-btn" id="btnClearSemesterTotalWeeks">Reset</button>
+                            </div>
+                            <span class="semester-date-hint" id="semesterTotalWeeksHint"></span>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>

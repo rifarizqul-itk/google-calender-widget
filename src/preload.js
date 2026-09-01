@@ -38,5 +38,11 @@ contextBridge.exposeInMainWorld('calendarWidgetAPI', {
         const subscription = (_event, data) => callback(data);
         ipcRenderer.on('calendar:events-updated', subscription);
         return () => ipcRenderer.removeListener('calendar:events-updated', subscription);
+    },
+    academic: {
+        getWeekInfo: () => ipcRenderer.invoke('academic:get-week-info'),
+        saveSemesterStart: (dateStr) => ipcRenderer.invoke('academic:save-semester-start', dateStr),
+        saveSemesterTotalWeeks: (weeks) => ipcRenderer.invoke('academic:save-semester-total-weeks', weeks)
     }
 });
+

@@ -20,9 +20,10 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 ### Key Capabilities
 
-- **Dual View Modes**: Switch between a chronological Agenda timeline (focused on present & upcoming events) and an interactive Month Calendar with historical schedule browsing.
-- **Full In-App Event Editing**: Update title, timing, all-day toggle, location, and description with Google Calendar API v3 patch updates.
-- **Historical Schedule Viewing**: Browse past events seamlessly on the Calendar tab with color indicator dots and subtle "Past / Selesai" status badges.
+- **Triple View Modes**: Switch seamlessly between a chronological **Agenda** timeline, an interactive **Month Calendar**, and a dedicated **Academic Semester** week tracker.
+- **Academic Semester Week Tracker**: Automatically detects active semester calendars (e.g. `SEMESTER 5 - 2026/2027`), calculates current semester weeks (Week 1–16/17), highlights the active week, and displays a glanceable week chip directly in the header banner with manual start date and week count overrides in Settings.
+- **Full In-App Event Editing & Instant Modal**: Create or edit event titles, timing, all-day status, locations, and descriptions with 0ms instant modal launch and in-app Google Calendar API v3 updates.
+- **Historical Schedule Viewing**: Browse past events seamlessly on the Calendar tab with color indicator dots and subtle hover states without visual clutter.
 - **Smart Color & Contrast Engine**: Preserves your Google Calendar badge colors while applying ITU-R BT.709 relative luminance adjustments for crisp contrast across light and dark themes.
 - **Auto-Expanding Description Field**: Multi-line editor that auto-expands with content up to 180px with sleek custom scrollbars and automatic HTML-to-plain text conversion.
 - **Intelligent URL & Name Truncation**: Prevents wide calendar titles and webcal feed URLs from breaking native dropdown bounds.

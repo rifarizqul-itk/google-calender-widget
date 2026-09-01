@@ -20,9 +20,10 @@ Widget ini menghadirkan antarmuka desktop yang ringkas dan elegan untuk melihat 
 
 ### Fitur Unggulan
  
-- **Dua Mode Tampilan**: Beralih fleksibel antara garis waktu **Agenda** kronologis (fokus pada agenda hari ini & mendatang), dan kisi interaktif **Kalender Bulanan** dengan penjelajahan riwayat jadwal.
-- **Edit Acara Lengkap**: Ubah judul, waktu mulai/selesai, status seharian, lokasi, dan deskripsi acara langsung dari widget dengan pembaruan instan ke Google Calendar API v3.
-- **Penjelajahan Jadwal Riwayat (Masa Lalu)**: Lihat acara masa lalu di tab Kalender dengan titik indikator warna dan lencana status "Selesai / Past".
+- **Tiga Mode Tampilan**: Beralih fleksibel antara garis waktu **Agenda** kronologis, kisi interaktif **Kalender Bulanan**, dan pelacak **Minggu Perkuliahan (Semester)**.
+- **Pelacak Minggu Perkuliahan (Semester Tracker)**: Mendeteksi kalender semester aktif secara otomatis (contoh: `SEMESTER 5 - 2026/2027`), menghitung minggu berjalan (Minggu 1–16/17), menyorot minggu aktif, dan menampilkan chip minggu langsung di banner atas lengkap dengan opsi override manual tanggal mulai & jumlah minggu di Pengaturan.
+- **Edit Acara Lengkap & Modal Instan**: Tambah dan edit judul, waktu, status seharian, lokasi, dan deskripsi acara langsung dari widget dengan popup form instan (0ms) yang tersinkronisasi ke Google Calendar API v3.
+- **Penjelajahan Jadwal Riwayat**: Lihat acara masa lalu di tab Kalender dengan titik indikator warna dan efek hover bersih tanpa visual clutter.
 - **Mesin Kontras & Warna Adaptif**: Mempertahankan palet warna asli Google Calendar dengan penyesuaian luminansi relatif standar ITU-R BT.709 agar tetap tajam dan terbaca jelas pada tema Gelap maupun Terang.
 - **Editor Deskripsi Fleksibel & Bersih**: Kotak input deskripsi yang otomatis menyesuaikan tinggi teks (hingga 180px) dengan scrollbar elegan dan pembersihan otomatis tag HTML kotor menjadi teks berpoin rapi.
 - **Pemotongan Cerdas URL & Nama Kalender**: Mencegah dropdown kalender melebar ke seluruh layar saat memuat nama URL webcal panjang.

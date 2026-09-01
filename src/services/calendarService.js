@@ -8,8 +8,12 @@ class CalendarService {
     constructor() {
         this.cachePath = null;
         this.selectedCalendarsPath = null;
+        this._calendarListCache = null;
+        this._calendarListCacheTs = 0;
+        this.CALENDAR_LIST_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
         this.initPaths();
     }
+
 
     initPaths() {
         const appData = process.env.APPDATA;
@@ -94,6 +98,8 @@ class CalendarService {
             if (this.selectedCalendarsPath && existsSync(this.selectedCalendarsPath)) {
                 unlinkSync(this.selectedCalendarsPath);
             }
+            this._calendarListCache = null;
+            this._calendarListCacheTs = 0;
             const { logger } = require('../utils/logger');
             logger.info('CalendarService', 'Local calendar cache and preferences cleared.');
         } catch (err) {
@@ -101,10 +107,24 @@ class CalendarService {
         }
     }
 
-    async getCalendarList() {
+    async getCalendarList(forceRefresh = false) {
         if (!authService.isAuthenticated()) {
             return { authenticated: false, calendars: [], selectedIds: [] };
         }
+
+        const now = Date.now();
+        if (!forceRefresh && this._calendarListCache && (now - this._calendarListCacheTs) < this.CALENDAR_LIST_CACHE_TTL_MS) {
+            const savedIds = this.getSelectedCalendarIds();
+            const selectedIds = savedIds !== null 
+                ? savedIds 
+                : this._calendarListCache.calendars.filter(c => c.selected).map(c => c.id);
+            return {
+                authenticated: true,
+                calendars: this._calendarListCache.calendars,
+                selectedIds
+            };
+        }
+
 
         try {
             const auth = await authService.getAuthenticatedClient();
@@ -128,6 +148,9 @@ class CalendarService {
                 ? savedIds 
                 : calendars.filter(c => c.selected).map(c => c.id);
 
+            this._calendarListCache = { calendars };
+            this._calendarListCacheTs = now;
+
             return {
                 authenticated: true,
                 calendars,
@@ -135,9 +158,17 @@ class CalendarService {
             };
         } catch (err) {
             console.error('[CalendarService] Error getting calendar list:', err.message);
+            if (this._calendarListCache) {
+                return {
+                    authenticated: true,
+                    calendars: this._calendarListCache.calendars,
+                    selectedIds: this.getSelectedCalendarIds() || []
+                };
+            }
             return { authenticated: true, calendars: [], selectedIds: [], error: err.message };
         }
     }
+
 
     async getUpcomingEvents(options = {}) {
         const { maxResults = 250, daysAhead = 90, daysPast = 60 } = options;
@@ -173,10 +204,13 @@ class CalendarService {
                         selected: Boolean(c.selected !== false && !c.hidden),
                         accessRole: c.accessRole || 'reader'
                     }));
+                    this._calendarListCache = { calendars: allCalendars };
+                    this._calendarListCacheTs = Date.now();
                 }
             } catch (listErr) {
                 console.warn('[CalendarService] Could not list all calendars, fallback to primary:', listErr.message);
             }
+
 
             // 2. Filter by user's selected/checked calendar preferences
             const savedSelectedIds = this.getSelectedCalendarIds();
