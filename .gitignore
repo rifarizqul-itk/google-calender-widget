@@ -4,6 +4,14 @@
 /dist
 skills-guide/
 .agents/
+.codex/
+.freebuff/
+.impeccable/
+.screenshot/
+skills-lock.json
+.github/agents/
+.github/hooks/
+.github/skills/
 
 # Logs and Crash Dumps
 logs/

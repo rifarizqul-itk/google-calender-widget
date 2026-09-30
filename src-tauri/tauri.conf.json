@@ -1,0 +1,50 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "google-calender-widget",
+  "version": "2.2.0",
+  "identifier": "io.github.rifarizqul-itk.google-calender-widget",
+  "build": {
+    "frontendDist": "../src/renderer"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "url": "index.html",
+        "title": "Google Calendar Widget",
+        "width": 360,
+        "height": 580,
+        "minWidth": 300,
+        "minHeight": 400,
+        "maxWidth": 1200,
+        "maxHeight": 1400,
+        "resizable": true,
+        "maximizable": false,
+        "fullscreen": false,
+        "center": true,
+        "visible": true,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "skipTaskbar": true,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,MediaRouter,Translate,OptimizationHints,DialMediaRouteProvider --disable-speech-api --disable-print-preview --disable-sync --no-pings --disable-default-apps --disable-extensions --disk-cache-size=1048576 --media-cache-size=1048576"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

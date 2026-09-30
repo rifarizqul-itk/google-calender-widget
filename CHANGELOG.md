@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-09-30
+
+### Added
+- **Tauri v2 Native Rust Backend**:
+  - Replaced the Electron runtime with a high-performance, lightweight Tauri v2 and Rust architecture.
+  - Native asynchronous HTTP client powered by `reqwest` and `rustls-tls` with direct connection pooling.
+  - Lightweight Win32 native system tray and window lifecycle manager.
+- **Ultra-Low Memory Footprint & Resource Optimization**:
+  - Reduced idle memory consumption from ~150–200 MB (Electron) to ~30–40 MB RAM (~80% reduction).
+  - Production binary size optimized to ~10 MB with Rust release optimizations (`opt-level = "z"`, LTO, strip symbols).
+  - Background memory trimming hooks integrating `ICoreWebView2_19::SetMemoryUsageTargetLevel(TargetLow)`.
+  - Minimal browser arguments configured in `tauri.conf.json` to strip unused Chromium services (speech API, print preview, translate, spellcheck, cast).
+- **Native Single-Instance Enforcement & Zombie Process Recovery**:
+  - Implemented Win32 named Mutex (`Global\io.github.rifarizqul-itk.google-calender-widget`) to guarantee only one widget instance runs.
+  - Automatic zombie process detection: if a background process holds the mutex without a valid window, it is terminated and restarted cleanly.
+  - Window focus restoration: launching from a shortcut or secondary instance brings the existing running widget to the foreground.
+- **Offline & Network Startup Resilience**:
+  - Implemented graceful offline fallback during widget startup when internet connectivity is unavailable, preventing false "All events ended" or blank screens.
+  - Automatic retry and background resync once internet connection is restored.
+
+### Fixed
+- **Upcoming Agenda Recurrence & Year Boundary Stuck Bug**:
+  - Fixed an issue where recurring or upcoming year-end events (e.g. Christmas / Natal) remained stuck in the Upcoming section due to UTC / local date boundary parsing.
+- **WebView2 Process Cleanup on Exit**:
+  - Fixed dangling WebView2 background processes when exiting via the system tray by explicitly destroying the native window handle prior to app shutdown.
+
+---
+
 ## [2.1.5] - 2026-09-01
 
 ### Added

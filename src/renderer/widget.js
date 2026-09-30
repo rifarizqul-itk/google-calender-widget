@@ -13,6 +13,7 @@
     let countdownIntervalId = null;
     let activeDetailEvent = null;
     let semesterWeekInfo = null; // Cached result from academic:get-week-info
+    let unlistenEventsUpdated = null;
 
     // DOM Elements
     const authOverlay = document.getElementById('authOverlay');
@@ -29,6 +30,7 @@
 
     const btnLangToggle = document.getElementById('btnLangToggle');
     const langIndicator = document.getElementById('langIndicator');
+    const langIndicatorPopover = document.getElementById('langIndicatorPopover');
     const btnLangId = document.getElementById('btnLangId');
     const btnLangEn = document.getElementById('btnLangEn');
 
@@ -36,6 +38,15 @@
     const btnPin = document.getElementById('btnPin');
     const btnRefresh = document.getElementById('btnRefresh');
     const btnAddEvent = document.getElementById('btnAddEvent');
+    const btnMoreMenu = document.getElementById('btnMoreMenu');
+    const moreMenuPopover = document.getElementById('moreMenuPopover');
+    const pinBadgeIndicator = document.getElementById('pinBadgeIndicator');
+    const themeBadgeIndicator = document.getElementById('themeBadgeIndicator');
+    const lblPinMenu = document.getElementById('lblPinMenu');
+    const lblRefreshMenu = document.getElementById('lblRefreshMenu');
+    const lblFilterMenu = document.getElementById('lblFilterMenu');
+    const lblThemeMenu = document.getElementById('lblThemeMenu');
+    const lblLangMenu = document.getElementById('lblLangMenu');
     const btnMinimize = document.getElementById('btnMinimize');
     const btnClose = document.getElementById('btnClose');
 
@@ -139,6 +150,14 @@
             pinTitle: 'Pin / Always on Top',
             refreshTitle: 'Refresh Jadwal',
             addEventTitle: 'Tambah Acara Baru',
+            menuMoreTitle: 'Menu & Opsi Widget',
+            menuPin: 'Always on Top',
+            menuRefresh: 'Refresh Jadwal',
+            menuFilter: 'Pilih Kalender...',
+            menuTheme: 'Tema',
+            menuLang: 'Bahasa',
+            themeDarkName: 'Gelap',
+            themeLightName: 'Terang',
             minimizeTitle: 'Minimize Window',
             closeTitle: 'Tutup Window',
             resizeHandleTitle: 'Tarik untuk mengubah ukuran',
@@ -163,7 +182,7 @@
             semesterNoEvents: 'Kalender semester ditemukan, tapi belum ada event. Tambahkan event pertama ke set tanggal mulai.',
             semesterCurrentBadge: 'SEKARANG',
             semesterWeekRange: (start, end) => `${start} – ${end}`,
-            semesterStartLabel: 'Tanggal Mulai Minggu 1 (Override Manual)',
+            semesterStartLabel: 'Tanggal Mulai Minggu 1 (Override)',
             semesterStartHintAuto: (calName) => `Terdeteksi otomatis dari kalender: ${calName}`,
             semesterStartHintManual: 'Mode manual aktif — tanggal ini menimpa deteksi otomatis',
             semesterStartHintNone: 'Isi untuk menimpa deteksi otomatis. Biarkan kosong untuk otomatis.',
@@ -367,6 +386,14 @@
             pinTitle: 'Pin / Always on Top',
             refreshTitle: 'Refresh Schedule',
             addEventTitle: 'Add New Event',
+            menuMoreTitle: 'Menu & Widget Options',
+            menuPin: 'Always on Top',
+            menuRefresh: 'Refresh Events',
+            menuFilter: 'Filter Calendars...',
+            menuTheme: 'Theme',
+            menuLang: 'Language',
+            themeDarkName: 'Dark',
+            themeLightName: 'Light',
             minimizeTitle: 'Minimize Window',
             closeTitle: 'Close Window',
             resizeHandleTitle: 'Drag to resize window',
@@ -621,6 +648,9 @@
         if (langIndicator) {
             langIndicator.textContent = currentLang.toUpperCase();
         }
+        if (langIndicatorPopover) {
+            langIndicatorPopover.textContent = currentLang.toUpperCase();
+        }
 
         if (btnLangToggle) {
             btnLangToggle.setAttribute('title', t('langToggle'));
@@ -635,6 +665,15 @@
         if (btnPin) btnPin.setAttribute('title', t('pinTitle'));
         if (btnRefresh) btnRefresh.setAttribute('title', t('refreshTitle'));
         if (btnAddEvent) btnAddEvent.setAttribute('title', t('addEventTitle'));
+        if (btnMoreMenu) btnMoreMenu.setAttribute('title', t('menuMoreTitle'));
+        if (lblPinMenu) lblPinMenu.textContent = t('menuPin');
+        if (lblRefreshMenu) lblRefreshMenu.textContent = t('menuRefresh');
+        if (lblFilterMenu) lblFilterMenu.textContent = t('menuFilter');
+        if (lblThemeMenu) lblThemeMenu.textContent = t('menuTheme');
+        if (lblLangMenu) lblLangMenu.textContent = t('menuLang');
+        if (themeBadgeIndicator) {
+            themeBadgeIndicator.textContent = currentTheme === 'light' ? t('themeLightName') : t('themeDarkName');
+        }
         if (btnMinimize) btnMinimize.setAttribute('title', t('minimizeTitle'));
         if (btnClose) btnClose.setAttribute('title', t('closeTitle'));
 
@@ -869,8 +908,20 @@
         }, durationMs);
     }
 
+    // Popover Menu Dismissal
+    function closeMoreMenu() {
+        if (moreMenuPopover) {
+            moreMenuPopover.classList.remove('active');
+        }
+        if (btnMoreMenu) {
+            btnMoreMenu.classList.remove('active');
+            btnMoreMenu.setAttribute('aria-expanded', 'false');
+        }
+    }
+
     // Modal Dismissal (ESC Key & Backdrop Click)
     function closeAllModals() {
+        closeMoreMenu();
         [addEventModal, eventDetailsModal, calendarFilterModal, confirmDeleteModal].forEach(m => {
             if (m) m.classList.remove('active');
         });
@@ -880,6 +931,42 @@
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeAllModals();
+            return;
+        }
+
+        // Avoid triggering single-key shortcuts when typing in inputs/textareas/selects
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const isEditing = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select' || (document.activeElement && document.activeElement.isContentEditable);
+        if (isEditing) return;
+
+        // Avoid triggering if modifier keys are pressed (allow browser shortcuts like Ctrl+R, etc.)
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        // Avoid triggering if any modal is currently active
+        const isAnyModalActive = [addEventModal, eventDetailsModal, calendarFilterModal, confirmDeleteModal].some(m => m && m.classList.contains('active'));
+        if (isAnyModalActive) return;
+
+        if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            if (btnRefresh) btnRefresh.click();
+        } else if (e.key === 'p' || e.key === 'P') {
+            e.preventDefault();
+            if (btnPin) btnPin.click();
+        } else if (e.key === 't' || e.key === 'T') {
+            e.preventDefault();
+            if (btnThemeToggle) btnThemeToggle.click();
+        } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            if (btnAddEvent) btnAddEvent.click();
+        } else if (e.key === '1') {
+            e.preventDefault();
+            if (tabButtons && tabButtons[0]) tabButtons[0].click();
+        } else if (e.key === '2') {
+            e.preventDefault();
+            if (tabButtons && tabButtons[1]) tabButtons[1].click();
+        } else if (e.key === '3') {
+            e.preventDefault();
+            if (tabButtons && tabButtons[2]) tabButtons[2].click();
         }
     });
 
@@ -940,10 +1027,87 @@
         });
     }
 
-    // Initialize Date Header
+    // Initialize Date Header with 3D Flip Animation (Spell 4)
     function updateDateBadge() {
+        if (!currentDateNumber) return;
         const now = new Date();
-        currentDateNumber.textContent = now.getDate();
+        const dateStr = String(now.getDate());
+        currentDateNumber.textContent = dateStr;
+        currentDateNumber.classList.remove('flip-animate');
+        void currentDateNumber.offsetWidth; // Force reflow to re-trigger CSS keyframe
+        currentDateNumber.classList.add('flip-animate');
+    }
+
+    // Sliding Tab Indicator (Spell 3)
+    let tabIndicator = null;
+    function initTabIndicator() {
+        const tabsNav = document.querySelector('.view-tabs');
+        if (!tabsNav) return;
+
+        tabIndicator = tabsNav.querySelector('.tab-indicator');
+        if (!tabIndicator) {
+            tabIndicator = document.createElement('div');
+            tabIndicator.className = 'tab-indicator';
+            tabsNav.prepend(tabIndicator);
+            tabsNav.classList.add('has-indicator');
+        }
+
+        const activeBtn = tabsNav.querySelector('.tab-btn.active') || tabsNav.querySelector('.tab-btn');
+        if (activeBtn) {
+            updateTabIndicator(activeBtn, true);
+        }
+
+        window.addEventListener('resize', () => {
+            const currentActive = tabsNav.querySelector('.tab-btn.active');
+            if (currentActive) updateTabIndicator(currentActive, true);
+        });
+    }
+
+    function updateTabIndicator(btn, immediate = false) {
+        if (!tabIndicator || !btn) return;
+        const left = btn.offsetLeft;
+        const width = btn.offsetWidth;
+        if (immediate) {
+            tabIndicator.style.transition = 'none';
+            tabIndicator.style.transform = `translateX(${left}px)`;
+            tabIndicator.style.width = `${width}px`;
+            tabIndicator.offsetHeight; // force reflow
+            tabIndicator.style.transition = '';
+        } else {
+            tabIndicator.style.transform = `translateX(${left}px)`;
+            tabIndicator.style.width = `${width}px`;
+        }
+    }
+
+    // Magnetic Button Hover (Spell 1)
+    function initMagneticButtons() {
+        const btns = document.querySelectorAll('.ctrl-btn');
+        btns.forEach(btn => {
+            if (btn.hasAttribute('data-tauri-drag-region') && btn.getAttribute('data-tauri-drag-region') !== 'false') {
+                return;
+            }
+
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const deltaX = (e.clientX - centerX) * 0.28;
+                const deltaY = (e.clientY - centerY) * 0.28;
+                btn.style.transform = `translate(${deltaX.toFixed(1)}px, ${deltaY.toFixed(1)}px)`;
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = '';
+            });
+
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.92)';
+            });
+
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = '';
+            });
+        });
     }
 
     // Tab Navigation
@@ -955,6 +1119,7 @@
             });
             btn.classList.add('active');
             btn.setAttribute('aria-selected', 'true');
+            updateTabIndicator(btn);
 
             const targetTab = btn.dataset.tab;
             if (targetTab === 'agenda') {
@@ -983,15 +1148,29 @@
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('calendar_widget_theme', theme);
+        if (themeBadgeIndicator) {
+            themeBadgeIndicator.textContent = theme === 'light' ? t('themeLightName') : t('themeDarkName');
+        }
         if (iconMoon && iconSun) {
             if (theme === 'light') {
                 iconMoon.style.display = 'none';
                 iconSun.style.display = 'block';
-                btnThemeToggle.setAttribute('title', t('themeDark'));
+                if (btnThemeToggle) btnThemeToggle.setAttribute('title', t('themeDark'));
             } else {
                 iconMoon.style.display = 'block';
                 iconSun.style.display = 'none';
-                btnThemeToggle.setAttribute('title', t('themeLight'));
+                if (btnThemeToggle) btnThemeToggle.setAttribute('title', t('themeLight'));
+            }
+        }
+        const popoverMoon = document.querySelector('#popoverBtnThemeToggle .icon-moon');
+        const popoverSun = document.querySelector('#popoverBtnThemeToggle .icon-sun');
+        if (popoverMoon && popoverSun) {
+            if (theme === 'light') {
+                popoverMoon.style.display = 'none';
+                popoverSun.style.display = 'block';
+            } else {
+                popoverMoon.style.display = 'block';
+                popoverSun.style.display = 'none';
             }
         }
     }
@@ -1049,6 +1228,7 @@
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             applyTheme(newTheme);
             renderTimeline(allEvents);
+            updateNextEventBanner();
             if (viewMonth.classList.contains('active')) {
                 renderMiniCalendar();
             }
@@ -1125,16 +1305,81 @@
         });
     });
 
+    // Popover Menu Toggle
+    if (btnMoreMenu && moreMenuPopover) {
+        btnMoreMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = moreMenuPopover.classList.toggle('active');
+            btnMoreMenu.classList.toggle('active', isOpen);
+            btnMoreMenu.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!moreMenuPopover.contains(e.target) && !btnMoreMenu.contains(e.target)) {
+                closeMoreMenu();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 380) {
+                closeMoreMenu();
+            }
+        });
+    }
+
+    // Popover Menu Items Delegation
+    const popoverBtnPin = document.getElementById('popoverBtnPin');
+    const popoverBtnRefresh = document.getElementById('popoverBtnRefresh');
+    const popoverBtnFilterCalendars = document.getElementById('popoverBtnFilterCalendars');
+    const popoverBtnThemeToggle = document.getElementById('popoverBtnThemeToggle');
+    const popoverBtnLangToggle = document.getElementById('popoverBtnLangToggle');
+
+    if (popoverBtnPin && btnPin) {
+        popoverBtnPin.addEventListener('click', () => {
+            closeMoreMenu();
+            btnPin.click();
+        });
+    }
+    if (popoverBtnRefresh && btnRefresh) {
+        popoverBtnRefresh.addEventListener('click', () => {
+            closeMoreMenu();
+            btnRefresh.click();
+        });
+    }
+    if (popoverBtnFilterCalendars && btnFilterCalendars) {
+        popoverBtnFilterCalendars.addEventListener('click', () => {
+            closeMoreMenu();
+            btnFilterCalendars.click();
+        });
+    }
+    if (popoverBtnThemeToggle && btnThemeToggle) {
+        popoverBtnThemeToggle.addEventListener('click', () => {
+            closeMoreMenu();
+            btnThemeToggle.click();
+        });
+    }
+    if (popoverBtnLangToggle && btnLangToggle) {
+        popoverBtnLangToggle.addEventListener('click', () => {
+            closeMoreMenu();
+            btnLangToggle.click();
+        });
+    }
+
     // Window Controls
     btnPin.addEventListener('click', async () => {
         if (window.calendarWidgetAPI) {
             isPinned = await window.calendarWidgetAPI.window.togglePin();
             btnPin.classList.toggle('active', isPinned);
-            showToast(isPinned ? 'Widget dipin (Always on Top)' : 'Widget dilepas dari layar (Unpinned)', 'info', 2000);
+            if (pinBadgeIndicator) {
+                pinBadgeIndicator.textContent = isPinned ? 'ON' : 'OFF';
+                pinBadgeIndicator.classList.toggle('active', isPinned);
+            }
+            showToast(isPinned ? t('pinActive') : t('pinInactive'), 'info', 2000);
         }
     });
 
     btnRefresh.addEventListener('click', () => {
+        closeMoreMenu();
         refreshEvents();
     });
 
@@ -1227,6 +1472,37 @@
         });
     }
 
+    // Helper: Safe Event Date Parser (handles all-day local date and ISO timestamps)
+    function parseEventDateMs(dateStr, isAllDay = false, isEnd = false) {
+        if (!dateStr) return 0;
+        if (isAllDay || (typeof dateStr === 'string' && dateStr.length === 10)) {
+            const datePart = dateStr.slice(0, 10);
+            return new Date(`${datePart}T00:00:00`).getTime();
+        }
+        return new Date(dateStr).getTime();
+    }
+
+    function isSameDay(t1, t2) {
+        const d1 = new Date(t1);
+        const d2 = new Date(t2);
+        return d1.getFullYear() === d2.getFullYear() &&
+               d1.getMonth() === d2.getMonth() &&
+               d1.getDate() === d2.getDate();
+    }
+
+    function sortAndSetEvents(events) {
+        allEvents = (events || []).slice().sort((a, b) => {
+            const aStartMs = parseEventDateMs(a.start, a.isAllDay, false);
+            const bStartMs = parseEventDateMs(b.start, b.isAllDay, false);
+            if (aStartMs !== bStartMs) return aStartMs - bStartMs;
+            if (a.isAllDay !== b.isAllDay) return a.isAllDay ? -1 : 1;
+            const aEndMs = parseEventDateMs(a.end, a.isAllDay, true);
+            const bEndMs = parseEventDateMs(b.end, b.isAllDay, true);
+            if (aEndMs !== bEndMs) return aEndMs - bEndMs;
+            return (a.summary || '').localeCompare(b.summary || '');
+        });
+    }
+
     // Helper: Time Formatter
     function formatTime(startStr, endStr, isAllDay) {
         if (isAllDay) return t('allDay');
@@ -1241,10 +1517,13 @@
     }
 
     // Helper: Countdown Calculator
-    function getEventCountdown(startStr, endStr) {
-        const now = new Date().getTime();
-        const start = new Date(startStr).getTime();
-        const end = new Date(endStr).getTime();
+    function getEventCountdown(startStr, endStr, isAllDay = false) {
+        const now = Date.now();
+        const start = parseEventDateMs(startStr, isAllDay, false);
+        let end = parseEventDateMs(endStr, isAllDay, true);
+        if (isAllDay && end <= start) {
+            end = start + 24 * 60 * 60 * 1000;
+        }
 
         if (now >= start && now <= end) {
             return t('ongoing');
@@ -1389,39 +1668,126 @@
 
     // Update Banner with Live Next Event Countdown
     function updateNextEventBanner() {
-        const now = new Date().getTime();
-        const futureEvents = allEvents.filter(ev => new Date(ev.end).getTime() > now);
+        const now = Date.now();
         const badgeLabel = nextEventBanner ? nextEventBanner.querySelector('.badge-label') : null;
         const bannerBadge = nextEventBanner ? nextEventBanner.querySelector('.banner-badge') : null;
 
-        if (futureEvents.length === 0) {
+        // Filter events that have not ended yet
+        const activeEvents = allEvents.filter(ev => {
+            const startMs = parseEventDateMs(ev.start, ev.isAllDay, false);
+            let endMs = parseEventDateMs(ev.end, ev.isAllDay, true);
+            if (ev.isAllDay && endMs <= startMs) {
+                endMs = startMs + 24 * 60 * 60 * 1000;
+            }
+            return endMs > now;
+        });
+
+        if (activeEvents.length === 0) {
             nextEventTitle.textContent = t('bannerNoEvents');
             nextEventTime.textContent = '--:--';
             nextEventCountdown.textContent = t('bannerRelax');
             if (badgeLabel) badgeLabel.textContent = t('bannerUpcoming');
-            if (bannerBadge) bannerBadge.classList.remove('ongoing');
-            nextEventBanner.onclick = null;
+            if (bannerBadge) {
+                bannerBadge.classList.remove('ongoing');
+                bannerBadge.classList.remove('urgent');
+            }
+            if (nextEventBanner) {
+                nextEventBanner.classList.remove('is-urgent');
+                nextEventBanner.style.removeProperty('--hero-event-color');
+                nextEventBanner.onclick = null;
+            }
             return;
         }
 
-        const nextEv = futureEvents[0];
-        const startMs = new Date(nextEv.start).getTime();
-        const endMs = new Date(nextEv.end).getTime();
+        // Sort active events so the most immediate/relevant event is first:
+        // 1. Ongoing timed events take top priority (currently happening meeting/class)
+        // 2. Upcoming timed events today next
+        // 3. Ongoing all-day events (e.g. today is holiday, but no upcoming timed events today)
+        // 4. Chronological by start time (earliest first)
+        // 5. Timed events before all-day events if same start time
+        activeEvents.sort((a, b) => {
+            const aStartMs = parseEventDateMs(a.start, a.isAllDay, false);
+            const bStartMs = parseEventDateMs(b.start, b.isAllDay, false);
+            let aEndMs = parseEventDateMs(a.end, a.isAllDay, true);
+            let bEndMs = parseEventDateMs(b.end, b.isAllDay, true);
+            if (a.isAllDay && aEndMs <= aStartMs) aEndMs = aStartMs + 24 * 60 * 60 * 1000;
+            if (b.isAllDay && bEndMs <= bStartMs) bEndMs = bStartMs + 24 * 60 * 60 * 1000;
+
+            const aOngoing = now >= aStartMs && now <= aEndMs;
+            const bOngoing = now >= bStartMs && now <= bEndMs;
+
+            const aOngoingTimed = aOngoing && !a.isAllDay;
+            const bOngoingTimed = bOngoing && !b.isAllDay;
+            if (aOngoingTimed !== bOngoingTimed) {
+                return aOngoingTimed ? -1 : 1;
+            }
+            if (aOngoingTimed && bOngoingTimed) {
+                return aEndMs - bEndMs;
+            }
+
+            const aUpcomingTimedToday = !a.isAllDay && aStartMs > now && isSameDay(aStartMs, now);
+            const bUpcomingTimedToday = !b.isAllDay && bStartMs > now && isSameDay(bStartMs, now);
+            if (aUpcomingTimedToday !== bUpcomingTimedToday) {
+                return aUpcomingTimedToday ? -1 : 1;
+            }
+
+            const aOngoingAllDay = aOngoing && a.isAllDay;
+            const bOngoingAllDay = bOngoing && b.isAllDay;
+            if (aOngoingAllDay !== bOngoingAllDay) {
+                return aOngoingAllDay ? -1 : 1;
+            }
+
+            if (aStartMs !== bStartMs) {
+                return aStartMs - bStartMs;
+            }
+
+            if (a.isAllDay !== b.isAllDay) {
+                return a.isAllDay ? 1 : -1;
+            }
+
+            return aEndMs - bEndMs;
+        });
+
+        const nextEv = activeEvents[0];
+        const startMs = parseEventDateMs(nextEv.start, nextEv.isAllDay, false);
+        let endMs = parseEventDateMs(nextEv.end, nextEv.isAllDay, true);
+        if (nextEv.isAllDay && endMs <= startMs) {
+            endMs = startMs + 24 * 60 * 60 * 1000;
+        }
+
         const isOngoing = now >= startMs && now <= endMs;
+        const diffMs = startMs - now;
+        const isUrgent = isOngoing || (!nextEv.isAllDay && diffMs > 0 && diffMs <= 15 * 60 * 1000);
+
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const colorInfo = resolveEventColors(nextEv.eventColor || nextEv.calendarColor, isLight);
+
+        if (nextEventBanner) {
+            nextEventBanner.style.setProperty('--hero-event-color', colorInfo.accent);
+            nextEventBanner.classList.toggle('is-urgent', isUrgent);
+        }
 
         if (badgeLabel) {
-            badgeLabel.textContent = isOngoing ? t('bannerOngoing') : t('bannerUpcoming');
+            badgeLabel.textContent = isOngoing ? t('bannerOngoing') : (isUrgent ? 'SEGERA' : t('bannerUpcoming'));
         }
         if (bannerBadge) {
             bannerBadge.classList.toggle('ongoing', isOngoing);
+            bannerBadge.classList.toggle('urgent', isUrgent && !isOngoing);
         }
 
         nextEventTitle.textContent = nextEv.summary;
         nextEventTime.textContent = formatTime(nextEv.start, nextEv.end, nextEv.isAllDay);
-        nextEventCountdown.textContent = getEventCountdown(nextEv.start, nextEv.end);
+        nextEventCountdown.textContent = getEventCountdown(nextEv.start, nextEv.end, nextEv.isAllDay);
 
-        nextEventBanner.style.cursor = 'pointer';
+        nextEventBanner.style.cursor = 'default';
         nextEventBanner.onclick = () => showEventDetails(nextEv);
+        const bannerArrow = nextEventBanner.querySelector('.banner-action-arrow');
+        if (bannerArrow) {
+            bannerArrow.onclick = (e) => {
+                e.stopPropagation();
+                showEventDetails(nextEv);
+            };
+        }
     }
 
     // Show In-App Event Details Modal
@@ -1501,11 +1867,11 @@
 
         detailTitle.textContent = ev.summary;
 
-        const dateObj = new Date(ev.start);
+        const dateObj = new Date(parseEventDateMs(ev.start, ev.isAllDay, false));
         const dateFormatted = dateObj.toLocaleDateString(t('locale'), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         const timeFormatted = formatTime(ev.start, ev.end, ev.isAllDay);
         detailTime.textContent = `${dateFormatted} • ${timeFormatted}`;
-        detailCountdown.textContent = getEventCountdown(ev.start, ev.end);
+        detailCountdown.textContent = getEventCountdown(ev.start, ev.end, ev.isAllDay);
 
         // Google Meet
         if (ev.hangoutLink) {
@@ -1850,7 +2216,11 @@
 
         // Agenda tab focus: show events occurring today or in the future
         const agendaEvents = events.filter(ev => {
-            const endMs = new Date(ev.end).getTime();
+            const startMs = parseEventDateMs(ev.start, ev.isAllDay, false);
+            let endMs = parseEventDateMs(ev.end, ev.isAllDay, true);
+            if (ev.isAllDay && endMs <= startMs) {
+                endMs = startMs + 24 * 60 * 60 * 1000;
+            }
             return endMs >= startOfToday;
         });
 
@@ -1862,7 +2232,7 @@
         // Group by Date string
         const groups = {};
         agendaEvents.forEach(ev => {
-            const dateObj = new Date(ev.start);
+            const dateObj = new Date(parseEventDateMs(ev.start, ev.isAllDay, false));
             const dateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
             if (!groups[dateKey]) {
                 groups[dateKey] = {
@@ -1882,11 +2252,23 @@
             const group = groups[dateKey];
             const headerLabel = getRelativeDayLabel(group.dateObj);
 
+            // Sort items chronologically within the day
+            group.items.sort((a, b) => {
+                const aStartMs = parseEventDateMs(a.start, a.isAllDay, false);
+                const bStartMs = parseEventDateMs(b.start, b.isAllDay, false);
+                if (aStartMs !== bStartMs) return aStartMs - bStartMs;
+                if (a.isAllDay !== b.isAllDay) return a.isAllDay ? -1 : 1;
+                const aEndMs = parseEventDateMs(a.end, a.isAllDay, true);
+                const bEndMs = parseEventDateMs(b.end, b.isAllDay, true);
+                if (aEndMs !== bEndMs) return aEndMs - bEndMs;
+                return (a.summary || '').localeCompare(b.summary || '');
+            });
+
             html += `
                 <div class="timeline-date-group">
-                    <div class="date-group-header">
-                        <span class="header-label">${headerLabel}</span>
-                        <span class="header-badge">${group.items.length}</span>
+                    <div class="date-group-header" data-tauri-drag-region="deep" data-tauri-drag-region>
+                        <span class="header-label" data-tauri-drag-region>${headerLabel}</span>
+                        <span class="header-badge" data-tauri-drag-region>${group.items.length}</span>
                     </div>
             `;
 
@@ -1895,6 +2277,15 @@
                 const colorInfo = resolveEventColors(ev.eventColor || ev.calendarColor, isLight);
                 const timeStr = formatTime(ev.start, ev.end, ev.isAllDay);
                 const calParse = parseHostOrText(ev.calendarName);
+
+                const nowMs = now.getTime();
+                const evStartMs = parseEventDateMs(ev.start, ev.isAllDay, false);
+                let evEndMs = parseEventDateMs(ev.end, ev.isAllDay, true);
+                if (ev.isAllDay && evEndMs <= evStartMs) {
+                    evEndMs = evStartMs + 24 * 60 * 60 * 1000;
+                }
+                const isOngoing = nowMs >= evStartMs && nowMs <= evEndMs;
+
                 const meetBtn = ev.hangoutLink ? `
                     <a href="#" class="event-meet-btn" data-event-idx="${idx}" data-date-key="${dateKey}" title="${t('joinMeet')}">
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1941,9 +2332,8 @@
                     miniBadges += `<span class="event-mini-badge icon-only" title="${t('badgeRecurringTitle')}"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>`;
                 }
 
-
                 html += `
-                    <div class="event-card" data-event-idx="${idx}" data-date-key="${dateKey}" style="--card-index: ${overallCardIdx}; --event-accent: ${colorInfo.accent};">
+                    <div class="event-card ${isOngoing ? 'is-ongoing' : ''}" data-event-idx="${idx}" data-date-key="${dateKey}" style="--card-index: ${overallCardIdx}; --event-accent: ${colorInfo.accent};">
                         <div class="event-color-strip" style="background-color: ${colorInfo.accent};"></div>
                         <div class="event-body">
                             <div class="event-title-row">
@@ -2025,7 +2415,7 @@
 
             // Check if events exist on this day
             const dayEvents = allEvents.filter(ev => {
-                const evDate = new Date(ev.start);
+                const evDate = new Date(parseEventDateMs(ev.start, ev.isAllDay, false));
                 return evDate.getFullYear() === year && evDate.getMonth() === month && evDate.getDate() === d;
             });
             const hasEvents = dayEvents.length > 0;
@@ -2078,8 +2468,19 @@
         });
 
         currentDayMatches = allEvents.filter(ev => {
-            const evDate = new Date(ev.start);
+            const evDate = new Date(parseEventDateMs(ev.start, ev.isAllDay, false));
             return evDate.getFullYear() === year && (evDate.getMonth() + 1) === month && evDate.getDate() === day;
+        });
+
+        currentDayMatches.sort((a, b) => {
+            const aStartMs = parseEventDateMs(a.start, a.isAllDay, false);
+            const bStartMs = parseEventDateMs(b.start, b.isAllDay, false);
+            if (aStartMs !== bStartMs) return aStartMs - bStartMs;
+            if (a.isAllDay !== b.isAllDay) return a.isAllDay ? -1 : 1;
+            const aEndMs = parseEventDateMs(a.end, a.isAllDay, true);
+            const bEndMs = parseEventDateMs(b.end, b.isAllDay, true);
+            if (aEndMs !== bEndMs) return aEndMs - bEndMs;
+            return (a.summary || '').localeCompare(b.summary || '');
         });
 
         if (currentDayMatches.length === 0) {
@@ -2166,6 +2567,7 @@
 
     // Calendar Filter Checklist Logic (with Skeleton, Empty, and Error states)
     btnFilterCalendars.addEventListener('click', async () => {
+        closeMoreMenu();
         calendarFilterModal.classList.add('active');
         
         // Show realistic Skeleton Checklist
@@ -2235,16 +2637,18 @@
                     return;
                 }
 
-                const { calendars, selectedIds } = listRes;
+                const calendars = listRes.calendars || [];
+                const selectedIds = listRes.selectedIds || listRes.selected_ids || [];
                 let html = '';
 
                 calendars.forEach(cal => {
-                    const isChecked = selectedIds.includes(cal.id);
+                    const isChecked = Array.isArray(selectedIds) ? selectedIds.includes(cal.id) : false;
                     const desc = cal.primary ? t('primaryCalendarLabel') : (cal.description || t('googleCalendarLabel'));
+                    const bgColor = cal.backgroundColor || cal.background_color || '#38bdf8';
                     html += `
                         <label class="calendar-checklist-item" data-id="${cal.id}">
                             <input type="checkbox" class="cal-checkbox" value="${cal.id}" ${isChecked ? 'checked' : ''}>
-                            <span class="cal-chip" style="background-color: ${cal.backgroundColor || '#38bdf8'};"></span>
+                            <span class="cal-chip" style="background-color: ${bgColor};"></span>
                             <div class="cal-item-info">
                                 <span class="cal-item-title">${cal.summary}</span>
                                 <span class="cal-item-desc">${desc}</span>
@@ -2929,7 +3333,18 @@
             }
 
             authOverlay.classList.add('hidden');
-            allEvents = res.events || [];
+
+            if (res.error && (!res.events || res.events.length === 0)) {
+                setSyncStatus('syncFailed');
+                if (allEvents.length === 0) {
+                    renderTimelineError(t('errorAgendaDesc'));
+                } else {
+                    showToast(t('toastSyncOfflineError'), 'error', 3500);
+                }
+                return;
+            }
+
+            sortAndSetEvents(res.events);
 
             setSyncStatus(res.fromCache ? 'offlineCache' : 'synced');
 
@@ -2971,10 +3386,16 @@
             }, { passive: true });
         }
         updateDateBadge();
+        initTabIndicator();
+        initMagneticButtons();
 
         if (window.calendarWidgetAPI) {
             isPinned = await window.calendarWidgetAPI.window.isPinned();
             btnPin.classList.toggle('active', isPinned);
+            if (pinBadgeIndicator) {
+                pinBadgeIndicator.textContent = isPinned ? 'ON' : 'OFF';
+                pinBadgeIndicator.classList.toggle('active', isPinned);
+            }
 
             const authStatus = await window.calendarWidgetAPI.auth.checkStatus();
             if (!authStatus.authenticated) {
@@ -2984,14 +3405,29 @@
                 }
             } else {
                 authOverlay.classList.add('hidden');
+
+                // Instant Offline-First Cache Render (Zero-latency startup)
+                try {
+                    const cached = await window.calendarWidgetAPI.calendar.getEvents();
+                    if (cached && Array.isArray(cached.events) && cached.events.length > 0) {
+                        sortAndSetEvents(cached.events);
+                        setSyncStatus('offlineCache');
+                        renderTimeline(allEvents);
+                        updateNextEventBanner();
+                    }
+                } catch (e) {
+                    console.warn('Failed to load initial cached events:', e);
+                }
+
+                // Fetch fresh updates from Google
                 await refreshEvents();
                 // Load semester chip data silently in background (non-blocking)
                 loadSemesterTab().catch(() => {});
             }
 
             // Listen to IPC updates
-            window.calendarWidgetAPI.onEventsUpdated((data) => {
-                allEvents = data.events || [];
+            unlistenEventsUpdated = window.calendarWidgetAPI.onEventsUpdated((data) => {
+                sortAndSetEvents(data.events);
                 renderTimeline(allEvents);
                 updateNextEventBanner();
                 if (viewMonth.classList.contains('active')) {
@@ -3027,10 +3463,21 @@
                 updateDateBadge();
                 updateNextEventBanner();
                 startTicker();
+                const currentActive = document.querySelector('.tab-btn.active');
+                if (currentActive) updateTabIndicator(currentActive, true);
             }
         });
 
         startTicker();
+
+        // Cleanup on window unload / refresh to prevent listener leakage
+        window.addEventListener('beforeunload', () => {
+            if (typeof unlistenEventsUpdated === 'function') {
+                unlistenEventsUpdated();
+                unlistenEventsUpdated = null;
+            }
+            stopTicker();
+        });
     }
 
     // Launch

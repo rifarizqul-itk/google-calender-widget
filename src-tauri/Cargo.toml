@@ -1,0 +1,48 @@
+[package]
+name = "app"
+version = "2.2.0"
+description = "Google Calendar Ambient Desktop Widget"
+authors = ["rifarizqul-itk"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.3", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-log = "2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+chrono = { version = "0.4", features = ["serde"] }
+tiny_http = "0.12"
+url = "2.5"
+urlencoding = "2.1"
+open = "5.3"
+dirs = "6.0"
+log = "0.4"
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.38"
+windows = { version = "0.61", features = [
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_Security",
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging"
+] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -3,12 +3,12 @@
 
 # Google Calendar Desktop Widget
 
-An ambient desktop calendar widget for Windows, macOS, and Linux built on Electron. It connects directly to the Google Calendar API v3 to display your daily schedule with real-time countdowns, dual views, offline caching, and desktop integration.
+An ambient desktop calendar widget for Windows, macOS, and Linux built on Tauri v2 & Rust. It connects directly to the Google Calendar API v3 to display your daily schedule with real-time countdowns, dual views, offline caching, and desktop integration.
 
 [![GitHub Release](https://img.shields.io/github/v/release/rifarizqul-itk/google-calender-widget?style=flat-square)](https://github.com/rifarizqul-itk/google-calender-widget/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square)](#tech-stack)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square)](https://nodejs.org)
-[![Electron Version](https://img.shields.io/badge/electron-38.x-94a3b8?style=flat-square)](https://www.electronjs.org/)
+[![Tauri Version](https://img.shields.io/badge/tauri-2.x-brightgreen?style=flat-square)](https://tauri.app)
+[![Rust](https://img.shields.io/badge/rust-2021%20edition-orange?style=flat-square)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
@@ -23,6 +23,7 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 - **Triple View Modes**: Switch seamlessly between a chronological **Agenda** timeline, an interactive **Month Calendar**, and a dedicated **Academic Semester** week tracker.
 - **Academic Semester Week Tracker**: Automatically detects active semester calendars (e.g. `SEMESTER 5 - 2026/2027`), calculates current semester weeks (Week 1–16/17), highlights the active week, and displays a glanceable week chip directly in the header banner with manual start date and week count overrides in Settings.
 - **Full In-App Event Editing & Instant Modal**: Create or edit event titles, timing, all-day status, locations, and descriptions with 0ms instant modal launch and in-app Google Calendar API v3 updates.
+- **Ultra-Low Memory Footprint**: Powered by Tauri v2 and Rust, consuming only ~30–40 MB RAM (an 80%+ drop from Electron) with ~10 MB binary size.
 - **Historical Schedule Viewing**: Browse past events seamlessly on the Calendar tab with color indicator dots and subtle hover states without visual clutter.
 - **Smart Color & Contrast Engine**: Preserves your Google Calendar badge colors while applying ITU-R BT.709 relative luminance adjustments for crisp contrast across light and dark themes.
 - **Auto-Expanding Description Field**: Multi-line editor that auto-expands with content up to 180px with sleek custom scrollbars and automatic HTML-to-plain text conversion.
@@ -31,7 +32,6 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 - **Live Next-Event Ticker**: Header banner with live countdown timers and dynamic "UPCOMING / RUNNING" status badges.
 - **Direct Google Meet Launcher**: One-click join buttons for video conferences and meeting links extracted directly from Google Calendar event payloads.
 - **Multi-Calendar Filtering**: Toggle visibility for individual Google calendars (primary, work, shared, holiday feeds) with real-time preference persistence.
-- **OS Power & Memory Optimization**: Background Chromium throttling and `powerMonitor` hooks for near-zero idle CPU when minimized or during OS sleep.
 - **Fluid Resizing & State Persistence**: 8-directional window resizing with bounds saved across app restarts.
 - **Full Account Lifecycle**: OAuth 2.0 loopback login with a 5-minute timeout guard and a clean disconnect option that clears cached tokens and events from disk.
 
@@ -41,13 +41,12 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 | Layer | Technology |
 |---|---|
-| **Runtime** | Electron 38.x / Node.js 20+ |
-| **API Client** | Google APIs Node.js Client (`googleapis` v176+) |
-| **Authentication** | OAuth 2.0 (`google-auth-library`) with local ephemeral loopback |
+| **Runtime** | Tauri v2 (Rust 2021) |
+| **API Client** | Native Rust `reqwest` (with `rustls-tls`) |
+| **Authentication** | OAuth 2.0 with local ephemeral loopback |
 | **UI Structure** | Semantic HTML5 & Vanilla JavaScript |
 | **Styling** | Custom CSS3 Design System with Glassmorphism & GPU Compositor Animations |
-| **Test Runner** | Native Node.js Test Runner (`node:test`) |
-| **Packaging** | `electron-builder` 25.x (NSIS & Portable Windows Targets) |
+| **Packaging** | Tauri CLI / Cargo Release |
 
 ---
 

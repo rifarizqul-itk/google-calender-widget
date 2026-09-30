@@ -1,8 +1,7 @@
 {
   "name": "google-calender-widget",
-  "version": "2.1.5",
-  "main": "index.js",
-  "description": "An unofficial google calendar desktop widget for Windows, Mac and Linux",
+  "version": "2.2.0",
+  "description": "An unofficial ambient Google Calendar desktop widget built with Tauri 2",
   "author": "rifarizqul-itk <https://github.com/rifarizqul-itk>",
   "homepage": "https://github.com/rifarizqul-itk/google-calender-widget#readme",
   "repository": {
@@ -13,59 +12,17 @@
     "url": "https://github.com/rifarizqul-itk/google-calender-widget/issues"
   },
   "license": "MIT",
-  "devDependencies": {
-    "electron": "^38.0.0",
-    "electron-builder": "^25.0.5",
-    "nodemon": "^3.0.1"
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri"
   },
   "dependencies": {
-    "electron-is-dev": "^2.0.0",
-    "googleapis": "^176.0.0"
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-opener": "^2.5.5"
   },
-  "scripts": {
-    "start": "electron .",
-    "test": "node --test test/*.test.js",
-    "pack": "electron-builder --dir",
-    "dist:win": "electron-builder --win",
-    "dist:linux": "electron-builder --linux",
-    "dist:mac": "electron-builder --mac"
-  },
-  "build": {
-    "appId": "io.github.rifarizqul-itk.google-calender-widget",
-    "productName": "google-calender-widget",
-    "files": [
-      "index.js",
-      "package.json",
-      "src/**/*",
-      "resources/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "./resources/",
-        "to": "./"
-      }
-    ],
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ],
-      "icon": "resources/icon.png"
-    },
-    "mac": {
-      "category": "public.app-category.productivity",
-      "icon": "resources/icon.png"
-    },
-    "linux": {
-      "category": "Office",
-      "icon": "resources/icon.png",
-      "target": {
-        "target": "appimage",
-        "arch": [
-          "x64"
-        ]
-      }
-    }
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4"
+  }
 }

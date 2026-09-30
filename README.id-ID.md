@@ -3,12 +3,12 @@
 
 # Google Calendar Desktop Widget
 
-Widget kalender desktop bernuansa *ambient* modern untuk Windows, macOS, dan Linux berbasis Electron. Terhubung langsung dengan Google Calendar API v3 untuk menampilkan agenda harian lengkap dengan hitung mundur waktu nyata, tampilan ganda, sinkronisasi otomatis di latar belakang, dan penyimpanan cache offline.
+Widget kalender desktop bernuansa *ambient* modern untuk Windows, macOS, dan Linux berbasis Tauri v2 & Rust. Terhubung langsung dengan Google Calendar API v3 untuk menampilkan agenda harian lengkap dengan hitung mundur waktu nyata, tampilan ganda, sinkronisasi otomatis di latar belakang, dan penyimpanan cache offline.
 
 [![GitHub Release](https://img.shields.io/github/v/release/rifarizqul-itk/google-calender-widget?style=flat-square)](https://github.com/rifarizqul-itk/google-calender-widget/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square)](#tumpukan-teknologi-tech-stack)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square)](https://nodejs.org)
-[![Electron Version](https://img.shields.io/badge/electron-38.x-94a3b8?style=flat-square)](https://www.electronjs.org/)
+[![Tauri Version](https://img.shields.io/badge/tauri-2.x-brightgreen?style=flat-square)](https://tauri.app)
+[![Rust](https://img.shields.io/badge/rust-2021%20edition-orange?style=flat-square)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
@@ -23,6 +23,7 @@ Widget ini menghadirkan antarmuka desktop yang ringkas dan elegan untuk melihat 
 - **Tiga Mode Tampilan**: Beralih fleksibel antara garis waktu **Agenda** kronologis, kisi interaktif **Kalender Bulanan**, dan pelacak **Minggu Perkuliahan (Semester)**.
 - **Pelacak Minggu Perkuliahan (Semester Tracker)**: Mendeteksi kalender semester aktif secara otomatis (contoh: `SEMESTER 5 - 2026/2027`), menghitung minggu berjalan (Minggu 1–16/17), menyorot minggu aktif, dan menampilkan chip minggu langsung di banner atas lengkap dengan opsi override manual tanggal mulai & jumlah minggu di Pengaturan.
 - **Edit Acara Lengkap & Modal Instan**: Tambah dan edit judul, waktu, status seharian, lokasi, dan deskripsi acara langsung dari widget dengan popup form instan (0ms) yang tersinkronisasi ke Google Calendar API v3.
+- **Footprint Memori Ekstrem Hemat**: Didukung oleh Tauri v2 dan Rust murni, hanya membutuhkan ~30–40 MB RAM (turun >80% dari Electron) dengan ukuran biner ~10 MB.
 - **Penjelajahan Jadwal Riwayat**: Lihat acara masa lalu di tab Kalender dengan titik indikator warna dan efek hover bersih tanpa visual clutter.
 - **Mesin Kontras & Warna Adaptif**: Mempertahankan palet warna asli Google Calendar dengan penyesuaian luminansi relatif standar ITU-R BT.709 agar tetap tajam dan terbaca jelas pada tema Gelap maupun Terang.
 - **Editor Deskripsi Fleksibel & Bersih**: Kotak input deskripsi yang otomatis menyesuaikan tinggi teks (hingga 180px) dengan scrollbar elegan dan pembersihan otomatis tag HTML kotor menjadi teks berpoin rapi.
@@ -31,7 +32,6 @@ Widget ini menghadirkan antarmuka desktop yang ringkas dan elegan untuk melihat 
 - **Ticker Hitung Mundur Acara Terdekat**: Banner atas dengan hitung mundur waktu nyata (*countdown*) dan lencana dinamis "SEGERA / BERJALAN".
 - **Peluncur Google Meet Cepat**: Tombol sekali klik untuk langsung bergabung ke konferensi video atau tautan rapat dari Google Calendar.
 - **Penyaringan Banyak Kalender**: Pilih dan saring kalender Google mana saja yang ingin ditampilkan (primer, pekerjaan, kalender bersama, hari libur) secara persisten.
-- **Optimasi Daya & Penghematan Memori OS**: Integrasi `powerMonitor` dan `backgroundThrottling` untuk efisiensi CPU 0% saat jendela diminimalkan atau komputer dalam mode tidur (sleep).
 - **Pengubahan Ukuran Fleksibel**: 8 titik *handle* pengubah ukuran jendela dengan posisi dan dimensi yang otomatis tersimpan.
 - **Siklus Akun Lengkap**: Autentikasi OAuth 2.0 loopback aman dengan batas waktu 5 menit dan opsi putuskan akun (*logout*) yang membersihkan token dan cache dari disk.
 
@@ -41,13 +41,12 @@ Widget ini menghadirkan antarmuka desktop yang ringkas dan elegan untuk melihat 
 
 | Lapisan | Teknologi |
 |---|---|
-| **Runtime** | Electron 38.x / Node.js 20+ |
-| **API Client** | Google APIs Node.js Client (`googleapis` v176+) |
-| **Autentikasi** | OAuth 2.0 (`google-auth-library`) dengan local loopback |
+| **Runtime** | Tauri v2 (Rust 2021) |
+| **API Client** | Native Rust `reqwest` (dengan `rustls-tls`) |
+| **Autentikasi** | OAuth 2.0 dengan local loopback |
 | **Struktur UI** | Semantic HTML5 & Vanilla JavaScript murni |
 | **Gaya & Desain** | Desain CSS3 Kustom dengan Glassmorphism & Animasi Akselerasi GPU |
-| **Test Runner** | Node.js Test Runner Bawaan (`node:test`) |
-| **Pengemasan** | `electron-builder` 25.x (Target Windows NSIS & Portabel) |
+| **Pengemasan** | Tauri CLI / Cargo Release |
 
 ---
 
