@@ -52,8 +52,9 @@ This widget provides an ambient desktop overlay that keeps your schedule visible
 
 ## Prerequisites
 
-- **Node.js**: Version 20.0.0 or higher
-- **npm** or **yarn**
+- **Rust & Cargo**: Install via [rustup.rs](https://rustup.rs/)
+- **Tauri v2 CLI**: `cargo install tauri-cli --version '^2'` (or via `npm i @tauri-apps/cli`)
+- **WebView2 Runtime** *(Windows)*: Pre-installed on Windows 10+. If missing, download from [Microsoft](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 - **Google Account & Google Cloud Project**: Used to generate your own `client_secret.json` credential (BYOK - Bring Your Own Key mode).
 
 ---
@@ -127,73 +128,62 @@ Ensure your `client_secret.json` file from the setup steps above is placed in th
 ### 4. Run the Widget
 
 ```bash
-npm start
+npm run dev
+# or directly:
+cargo tauri dev
 ```
 
 ---
 
 ## Architecture
 
-The project follows an isolated multi-process Electron architecture adhering to context isolation and least-privilege IPC patterns.
+The project follows a Tauri v2 architecture with an isolated Rust backend and a WebView2 frontend renderer.
 
 ```
 google-calender-widget/
-├── index.js                     # Electron main entry wrapper
-├── package.json                 # Project configuration and build scripts
-├── src/
-│   ├── app.js                   # Main process: lifecycle, IPC handlers, background sync
-│   ├── preload.js               # Secure context bridge exposing calendarWidgetAPI
-│   ├── config/
-│   │   └── constants.js         # View constants and default configurations
-│   ├── services/
-│   │   ├── authService.js       # OAuth2 client, browser login loopback, token storage
-│   │   ├── calendarService.js   # Google Calendar API wrapper, caching, event parsing
-│   │   ├── preferences.js       # Local view and user preferences persistence
-│   │   ├── trayManager.js       # Windows system tray integration and context menu
-│   │   └── windowState.js       # Window bounds tracker and screen constraint manager
-│   ├── utils/
-│   │   ├── dateHelper.js        # Date formatting, countdowns, relative day labels
-│   │   ├── debounce.js          # Generic debounce utility
-│   │   ├── logger.js            # Structured logging and crash reporting
-│   │   └── paths.js             # Cross-platform asset and resource resolver
-│   └── renderer/
-│       ├── widget.html          # Semantic HTML structure for widget and modals
-│       ├── widget.css           # Glassmorphism design tokens, themes, layout rules
-│       └── widget.js            # DOM controller, animations, event listeners, state
-├── test/                        # Automated unit tests using node:test
-│   ├── constants.test.js
-│   ├── dateHelper.test.js
-│   ├── debounce.test.js
-│   ├── logger.test.js
-│   ├── paths.test.js
-│   ├── preferences.test.js
-│   └── windowState.test.js
-└── resources/                   # Application icons and assets
+├── package.json                 # JS tooling and Tauri CLI scripts
+├── src-tauri/                   # Native Rust backend
+│   ├── Cargo.toml               # Rust crate manifest and dependencies
+│   ├── tauri.conf.json          # Tauri app, window, and bundle configuration
+│   ├── build.rs                 # Tauri build script
+│   ├── capabilities/
+│   │   └── default.json         # Tauri capability permissions
+│   ├── icons/                   # Application icon assets
+│   └── src/
+│       ├── main.rs              # Entry point: single-instance enforcement, mutex guard
+│       ├── lib.rs               # Tauri app setup, tray init, window restore, auto-sync
+│       ├── tray.rs              # System tray menu and event handlers
+│       ├── paths.rs             # Cross-platform app data directory resolver
+│       └── commands/
+│           ├── auth.rs          # OAuth2 loopback server, token storage & refresh
+│           ├── calendar.rs      # Google Calendar API v3 client, event caching
+│           ├── academic.rs      # Semester week tracker logic
+│           ├── window.rs        # Window dragging, resizing, pinning IPC commands
+│           ├── system.rs        # Auto-launch, log & credential folder openers
+│           └── http_client.rs   # Shared async reqwest HTTP client
+└── src/renderer/                # Frontend (HTML/CSS/JS rendered in WebView2)
+    ├── index.html               # App entry point loaded by Tauri
+    ├── widget.html              # Semantic HTML structure for widget and modals
+    ├── widget.css               # Glassmorphism design tokens, themes, layout rules
+    ├── widget.js                # DOM controller, animations, event listeners, state
+    └── tauri-bridge.js          # Tauri JS API bridge and IPC command wrappers
 ```
 
-### IPC Data Flow
+### Data Flow
 
 ```
 +-------------------------------------------------------------+
-|                       Renderer Process                      |
-| (widget.js -> Pure DOM & CSS, Context-Isolated, Sandbox Safe)|
+|                     WebView2 Renderer                       |
+|  (widget.js -> DOM, CSS, Glassmorphism UI, State Machine)   |
 +-------------------------------------------------------------+
                               |
-                     window.calendarWidgetAPI
+                   Tauri IPC (invoke / emit)
                               |
 +-------------------------------------------------------------+
-|                      Preload Bridge                         |
-|   (src/preload.js: Whitelisted invocations & subscriptions) |
-+-------------------------------------------------------------+
-                              |
-                          IPC Events
-                              |
-+-------------------------------------------------------------+
-|                        Main Process                         |
-|   (src/app.js: Window Manager, Background Sync, Tray Menu)  |
+|                   Rust Backend (lib.rs)                     |
 |                                                             |
 |   +-------------------+              +-------------------+  |
-|   |   authService     |              |  calendarService  |  |
+|   |   auth.rs         |              |  calendar.rs      |  |
 |   | (OAuth2 Loopback) |              | (Google API v3)   |  |
 |   +-------------------+              +-------------------+  |
 |             |                                  |            |
@@ -208,31 +198,9 @@ google-calender-widget/
 
 | Command | Description |
 |---|---|
-| `npm start` | Launches the widget in development mode |
-| `npm test` | Runs the full automated unit test suite (`node:test`) |
-| `npm run pack` | Packages the application directory without creating installers |
-| `npm run dist:win` | Compiles the production Windows NSIS installer and portable `.exe` |
-| `npm run dist:linux` | Compiles Linux distribution packages (AppImage) |
-| `npm run dist:mac` | Compiles macOS application bundle |
-
----
-
-## Testing
-
-Run all unit tests:
-
-```bash
-npm test
-```
-
-The test suite covers:
-- Calendar view constants and URL detection
-- All-day and timed event formatting (EN & ID)
-- Relative day calculation (today, tomorrow, yesterday)
-- Event countdowns and active ongoing states
-- Debounce timers and cancellation
-- Window bounds persistence and screen boundary clamping
-- Corrupted JSON recovery in preferences
+| `npm run dev` | Launches the widget in development mode (hot reload) |
+| `npm run build` | Compiles the production release binary and installers |
+| `cargo tauri dev` | Alternative: run dev mode directly via Cargo |
 
 ---
 
@@ -241,12 +209,15 @@ The test suite covers:
 To compile the Windows installer and portable executable:
 
 ```bash
-npm run dist:win
+npm run build
+# or:
+cargo tauri build
 ```
 
-Build outputs are saved to the `dist/` directory:
-- `google-calender-widget Setup 2.0.0.exe` (NSIS Installer)
-- `google-calender-widget 2.0.0.exe` (Portable Executable)
+Build outputs are saved to `src-tauri/target/release/bundle/`:
+- `nsis/google-calender-widget_x.x.x_x64-setup.exe` (NSIS Installer)
+- `msi/google-calender-widget_x.x.x_x64_en-US.msi` (MSI Package)
+- `target/release/app.exe` (Portable Executable)
 
 ---
 
@@ -270,7 +241,7 @@ Click the settings icon in the widget header, then click **Open Logs Folder** to
 
 1. Fork the repository: `https://github.com/rifarizqul-itk/google-calender-widget`
 2. Create your feature branch: `git checkout -b feat/your-feature-name`
-3. Ensure all tests pass: `npm test`
+3. Build and verify: `npm run build`
 4. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/): `git commit -m "feat: add feature summary"`
 5. Push to your fork: `git push origin feat/your-feature-name`
 6. Open a Pull Request.

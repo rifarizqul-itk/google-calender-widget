@@ -52,8 +52,9 @@ Widget ini menghadirkan antarmuka desktop yang ringkas dan elegan untuk melihat 
 
 ## Prasyarat
 
-- **Node.js**: Versi 20.0.0 atau lebih baru
-- **npm** atau **yarn**
+- **Rust & Cargo**: Instal melalui [rustup.rs](https://rustup.rs/)
+- **Tauri v2 CLI**: `cargo install tauri-cli --version '^2'` (atau via `npm i @tauri-apps/cli`)
+- **WebView2 Runtime** *(Windows)*: Sudah terinstal di Windows 10+. Jika belum, unduh dari [Microsoft](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 - **Akun Google & Project Google Cloud**: Digunakan untuk membuat kredensial `client_secret.json` sendiri (Mode BYOK - Bring Your Own Key).
 
 ---
@@ -127,48 +128,45 @@ Pastikan file `client_secret.json` hasil langkah di atas telah ditempatkan di ro
 ### 4. Jalankan Widget
 
 ```bash
-npm start
+npm run dev
+# atau langsung via Cargo:
+cargo tauri dev
 ```
 
 ---
 
 ## Arsitektur Aplikasi
 
-Proyek ini menggunakan arsitektur multi-proses Electron terisolasi dengan pembagian tugas yang ketat dan keamanan IPC berbasis hak akses minimum.
+Proyek ini menggunakan arsitektur Tauri v2 dengan backend Rust terisolasi dan renderer frontend WebView2.
 
 ```
 google-calender-widget/
-├── index.js                     # Pembungkus entry point Electron utama
-├── package.json                 # Konfigurasi proyek dan skrip build
-├── src/
-│   ├── app.js                   # Main process: siklus hidup, IPC handler, sinkronisasi latar
-│   ├── preload.js               # Preload bridge aman yang mengekspos calendarWidgetAPI
-│   ├── config/
-│   │   └── constants.js         # Konstanta view dan konfigurasi default
-│   ├── services/
-│   │   ├── authService.js       # Client OAuth2, server loopback login, token storage
-│   │   ├── calendarService.js   # Wrapper Google Calendar API, cache, parser agenda
-│   │   ├── preferences.js       # Penyimpanan preferensi tampilan pengguna
-│   │   ├── trayManager.js       # Integrasi Windows system tray dan context menu
-│   │   └── windowState.js       # Pelacak ukuran dan batas koordinat layar
-│   ├── utils/
-│   │   ├── dateHelper.js        # Pemformat tanggal, countdown, label hari relatif
-│   │   ├── debounce.js          # Utilitas debounce performa
-│   │   ├── logger.js            # Pencatatan log terstruktur dan pelaporan error
-│   │   └── paths.js             # Resolusi aset dan berkas lintas platform
-│   └── renderer/
-│       ├── widget.html          # Struktur HTML semantik untuk widget dan modal
-│       ├── widget.css           # Token desain Glassmorphism, tema, tata letak
-│       └── widget.js            # Controller DOM, animasi, event listener, state
-├── test/                        # Pengujian unit otomatis menggunakan node:test
-│   ├── constants.test.js
-│   ├── dateHelper.test.js
-│   ├── debounce.test.js
-│   ├── logger.test.js
-│   ├── paths.test.js
-│   ├── preferences.test.js
-│   └── windowState.test.js
-└── resources/                   # Ikon dan aset aplikasi
+├── package.json                 # Peralatan JS dan skrip Tauri CLI
+├── src-tauri/                   # Backend Rust native
+│   ├── Cargo.toml               # Manifes crate Rust dan dependensi
+│   ├── tauri.conf.json          # Konfigurasi app, jendela, dan bundle Tauri
+│   ├── build.rs                 # Build script Tauri
+│   ├── capabilities/
+│   │   └── default.json         # Izin kapabilitas Tauri
+│   ├── icons/                   # Aset ikon aplikasi
+│   └── src/
+│       ├── main.rs              # Entry point: penegakan single-instance, mutex guard
+│       ├── lib.rs               # Setup app Tauri, tray, pemulihan jendela, auto-sync
+│       ├── tray.rs              # Menu system tray dan event handler
+│       ├── paths.rs             # Resolver direktori data aplikasi lintas platform
+│       └── commands/
+│           ├── auth.rs          # Server loopback OAuth2, penyimpanan & refresh token
+│           ├── calendar.rs      # Client Google Calendar API v3, caching event
+│           ├── academic.rs      # Logika pelacak minggu semester
+│           ├── window.rs        # Perintah IPC drag, resize, dan pin jendela
+│           ├── system.rs        # Auto-launch, pembuka folder log & kredensial
+│           └── http_client.rs   # HTTP client reqwest async bersama
+└── src/renderer/                # Frontend (HTML/CSS/JS dirender oleh WebView2)
+    ├── index.html               # Entry point app yang dimuat Tauri
+    ├── widget.html              # Struktur HTML semantik untuk widget dan modal
+    ├── widget.css               # Token desain Glassmorphism, tema, tata letak
+    ├── widget.js                # Controller DOM, animasi, event listener, state
+    └── tauri-bridge.js          # Jembatan Tauri JS API dan pembungkus perintah IPC
 ```
 
 ---
@@ -177,31 +175,9 @@ google-calender-widget/
 
 | Perintah | Keterangan |
 |---|---|
-| `npm start` | Menjalankan widget dalam mode pengembangan |
-| `npm test` | Menjalankan seluruh pengujian unit otomatis (`node:test`) |
-| `npm run pack` | Mengemas direktori aplikasi tanpa membuat installer |
-| `npm run dist:win` | Mengompilasi installer Windows NSIS dan executable portabel |
-| `npm run dist:linux` | Mengompilasi paket distribusi Linux (AppImage) |
-| `npm run dist:mac` | Mengompilasi bundle aplikasi macOS |
-
----
-
-## Pengujian (Testing)
-
-Jalankan pengujian unit:
-
-```bash
-npm test
-```
-
-Cakupan pengujian meliputi:
-- Konstanta view kalender dan deteksi URL
-- Pemformatan agenda seharian dan agenda bertenggat waktu (EN & ID)
-- Kalkulasi hari relatif (hari ini, besok, kemarin)
-- Hitung mundur acara dan penanda status sedang berlangsung
-- Pengatur waktu debounce dan pembatalan
-- Persistensi ukuran jendela dan batasan area layar
-- Pemulihan otomatis saat file preferensi JSON rusak
+| `npm run dev` | Menjalankan widget dalam mode pengembangan (hot reload) |
+| `npm run build` | Mengompilasi binary rilis dan paket installer |
+| `cargo tauri dev` | Alternatif: jalankan mode dev langsung via Cargo |
 
 ---
 
@@ -210,12 +186,15 @@ Cakupan pengujian meliputi:
 Untuk mengompilasi installer Windows dan file executable portabel:
 
 ```bash
-npm run dist:win
+npm run build
+# atau:
+cargo tauri build
 ```
 
-Hasil kompilasi akan tersimpan di dalam folder `dist/`:
-- `google-calender-widget Setup 2.0.0.exe` (Installer NSIS)
-- `google-calender-widget 2.0.0.exe` (Executable Portabel)
+Hasil kompilasi akan tersimpan di dalam folder `src-tauri/target/release/bundle/`:
+- `nsis/google-calender-widget_x.x.x_x64-setup.exe` (Installer NSIS)
+- `msi/google-calender-widget_x.x.x_x64_en-US.msi` (Paket MSI)
+- `target/release/app.exe` (Executable Portabel)
 
 ---
 
@@ -239,7 +218,7 @@ Klik ikon pengaturan di header widget, lalu klik tombol **Folder Kredensial** at
 
 1. Fork repositori: `https://github.com/rifarizqul-itk/google-calender-widget`
 2. Buat branch fitur Anda: `git checkout -b feat/nama-fitur-anda`
-3. Pastikan semua pengujian lulus: `npm test`
+3. Build dan verifikasi: `npm run build`
 4. Commit perubahan Anda sesuai format [Conventional Commits](https://www.conventionalcommits.org/): `git commit -m "feat: ringkasan fitur"`
 5. Push ke branch fork Anda: `git push origin feat/nama-fitur-anda`
 6. Buat Pull Request baru.
